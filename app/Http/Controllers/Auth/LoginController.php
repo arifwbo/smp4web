@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\ActivityLogger;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -36,5 +38,31 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    protected function authenticated(Request $request, $user)
+    {
+        ActivityLogger::log('auth.login', 'Login berhasil');
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('home');
+    }
+
+    protected function loggedOut(Request $request)
+    {
+        ActivityLogger::log('auth.logout', 'Logout berhasil');
+    }
+
+    protected function maxAttempts(): int
+    {
+        return 5;
+    }
+
+    protected function decayMinutes(): int
+    {
+        return 1;
     }
 }

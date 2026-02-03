@@ -4,36 +4,27 @@
 <!-- HERO SLIDER -->
 <div id="schoolCarousel" class="carousel slide hero-slider carousel-fade" data-bs-ride="carousel">
     <div class="carousel-indicators">
-        <button type="button" data-bs-target="#schoolCarousel" data-bs-slide-to="0" class="active"></button>
-        <button type="button" data-bs-target="#schoolCarousel" data-bs-slide-to="1"></button>
-        <button type="button" data-bs-target="#schoolCarousel" data-bs-slide-to="2"></button>
+        @foreach($slides as $index => $slide)
+            <button type="button" data-bs-target="#schoolCarousel" data-bs-slide-to="{{ $index }}" class="{{ $loop->first ? 'active' : '' }}" {{ $loop->first ? 'aria-current="true"' : '' }}></button>
+        @endforeach
     </div>
     <div class="carousel-inner">
-        <div class="carousel-item active">
-            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920" class="d-block w-100" alt="Sekolah">
-            <div class="carousel-caption hero-caption">
-                <h1 class="hero-title">Selamat Datang di<br>SMP Negeri 4 Samarinda</h1>
-                <p class="hero-subtitle">Mewujudkan Generasi Berprestasi, Berkarakter, dan Berwawasan Lingkungan.</p>
-                <div class="d-flex gap-3 justify-content-center">
-                    <a href="{{ route('profil') }}" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow">Profil Sekolah</a>
-                    <a href="{{ route('ppdb') }}" class="btn btn-outline-light fw-bold px-4 py-2 rounded-pill">Info PPDB</a>
+        @foreach($slides as $slide)
+            <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                <img src="{{ $slide['image_url'] }}" class="d-block w-100" alt="Slider {{ $loop->iteration }}" style="object-fit: cover; min-height: 480px;">
+                <div class="carousel-caption hero-caption">
+                    <h1 class="hero-title">{!! nl2br(e($slide['title'])) !!}</h1>
+                    @if(!empty($slide['subtitle']))
+                        <p class="hero-subtitle">{{ $slide['subtitle'] }}</p>
+                    @endif
+                    @if(!empty($slide['button_label']) && !empty($slide['button_link']))
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{{ $slide['button_link'] }}" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow">{{ $slide['button_label'] }}</a>
+                        </div>
+                    @endif
                 </div>
             </div>
-        </div>
-        <div class="carousel-item">
-            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920" class="d-block w-100" alt="Belajar">
-            <div class="carousel-caption hero-caption">
-                <h1 class="hero-title">Pembelajaran Aktif &<br>Menyenangkan</h1>
-                <p class="hero-subtitle">Didukung fasilitas lengkap dan tenaga pengajar profesional.</p>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <img src="https://images.unsplash.com/photo-1577896337318-2838d43f6c6d?q=80&w=1920" class="d-block w-100" alt="Prestasi">
-            <div class="carousel-caption hero-caption">
-                <h1 class="hero-title">Raih Prestasi<br>Gemilang</h1>
-                <p class="hero-subtitle">Mengembangkan potensi siswa baik akademik maupun non-akademik.</p>
-            </div>
-        </div>
+        @endforeach
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#schoolCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
     <button class="carousel-control-next" type="button" data-bs-target="#schoolCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
@@ -69,17 +60,33 @@
     </div>
 </div>
 
+@php
+    $kepsekPlaceholder = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500">
+    <rect width="400" height="500" fill="#f3f4f6"/>
+    <circle cx="200" cy="180" r="90" fill="#dbeafe"/>
+    <rect x="90" y="310" width="220" height="130" rx="65" fill="#dbeafe"/>
+    <text x="200" y="470" font-size="28" text-anchor="middle" fill="#94a3b8">Kepala Sekolah</text>
+</svg>
+SVG;
+    $kepsekPhoto = $profil?->foto_kepsek
+        ? asset('storage/' . $profil->foto_kepsek)
+        : 'data:image/svg+xml;charset=UTF-8,' . rawurlencode($kepsekPlaceholder);
+@endphp
+
 <!-- SAMBUTAN -->
 <section class="py-5 mt-5">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-5 mb-4 mb-lg-0">
-                <img src="https://via.placeholder.com/400x500" class="img-fluid rounded shadow-lg w-100" alt="Kepala Sekolah">
+            <div class="col-lg-4 col-md-5 mb-4 mb-lg-0">
+                <div class="position-relative" style="padding-top: 120%;">
+                    <img src="{{ $kepsekPhoto }}" class="position-absolute top-0 start-0 rounded shadow-lg w-100 h-100" style="object-fit: cover;" alt="Kepala Sekolah">
+                </div>
             </div>
-            <div class="col-lg-7 ps-lg-5">
+            <div class="col-lg-8 col-md-7 ps-lg-5">
                 <h6 class="text-primary-custom fw-bold text-uppercase">Sambutan Kepala Sekolah</h6>
                 <h2 class="fw-bold mb-4">{{ $profil?->kepala_sekolah ?? 'Kepala Sekolah' }}</h2>
-                <p class="text-muted lh-lg mb-4">{{ Str::limit($profil?->sambutan_kepsek ?? 'Selamat datang.', 450) }}</p>
+                <p class="text-muted lh-lg mb-4">{{ Str::limit(strip_tags($profil?->sambutan_kepsek ?? 'Selamat datang.'), 450) }}</p>
                 <a href="{{ route('profil') }}" class="btn btn-primary-custom rounded-pill px-4 shadow">Baca Selengkapnya</a>
             </div>
         </div>

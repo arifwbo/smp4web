@@ -111,6 +111,7 @@ return new class extends Migration {
             $table->string('nama');
             $table->string('email');
             $table->text('pesan');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }

@@ -11,8 +11,8 @@
             </nav>
             <h1 class="fw-bold text-primary-custom mb-3">{{ $post->judul }}</h1>
             <div class="text-muted mb-4 small"><i class="fas fa-calendar me-1"></i> {{ $post->created_at->format('d F Y') }}</div>
-            <img src="{{ $post->gambar_url }}" class="img-fluid rounded w-100 mb-4 shadow-sm">
-            <div class="lh-lg text-justify">{!! nl2br(e($post->isi)) !!}</div>
+            <img src="{{ $post->gambar_url }}" class="img-fluid rounded w-100 mb-4 shadow-sm" alt="{{ $post->judul }}">
+            <div class="lh-lg text-justify">{!! $post->isi !!}</div>
         </div>
     </div>
 </div>
