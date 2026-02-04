@@ -17,6 +17,39 @@
         </div>
     @endif
 
+    @php
+        $guruStructureFields = [
+            'pimpinan_manajemen' => 'Pimpinan & Manajemen',
+            'komite_sekolah' => 'Komite Sekolah',
+            'kepala_sekolah' => 'Kepala Sekolah',
+            'waka_kerjasama' => 'Waka Bidang Manajemen Kerjasama & Kehumasan',
+            'waka_kurikulum' => 'Waka Bidang Kurikulum',
+            'waka_sarpras' => 'Waka Bidang Sarana Prasarana',
+            'waka_kesiswaan' => 'Waka Bidang Kesiswaan',
+        ];
+
+        $tuStructureFields = [
+            'staf_tata_usaha' => 'Staf Tata Usaha',
+            'koordinator_media_bosda' => 'Koordinator Ruang Media & Bendahara BOSDA',
+            'bendahara_barang' => 'Bendahara Barang',
+            'bendahara_bosp' => 'Bendahara BOSP',
+            'kepegawaian' => 'Kepegawaian',
+            'pengantar_surat_kesiswaan' => 'Pengantar Surat / Kesiswaan',
+            'sapras_surat_menyurat' => 'Sapras / Surat Menyurat',
+            'operator_dapodik_kesiswaan' => 'Operator Dapodik / Kesiswaan',
+            'staf_kepsek_kurikulum' => 'Staf Kepala Sekolah dan Kurikulum',
+            'perpustakaan' => 'Perpustakaan',
+            'lab_komputer_teknisi' => 'Lab. Komputer dan Teknisi',
+            'laboratorium_ipa' => 'Laboratorium IPA',
+            'petugas_kebersihan' => 'Petugas Kebersihan',
+            'petugas_taman_kebersihan' => 'Petugas Taman & Kebersihan',
+            'petugas_keamanan' => 'Petugas Keamanan Sekolah',
+            'penjaga_malam' => 'Penjaga Malam',
+        ];
+        $strukturGuruValues = old('struktur_guru', $profile->struktur_guru ?? []);
+        $strukturTuValues = old('struktur_tu', $profile->struktur_tu ?? []);
+    @endphp
+
     <form method="POST" action="{{ route('admin.profile.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -101,6 +134,68 @@
                             <label>Struktur Organisasi (link atau deskripsi)</label>
                             <input type="text" name="struktur_organisasi" class="form-control @error('struktur_organisasi') is-invalid @enderror" value="{{ old('struktur_organisasi', $profile->struktur_organisasi) }}">
                             @error('struktur_organisasi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Upload Gambar Struktur Guru</label>
+                                @if($profile->struktur_guru_image)
+                                    <div class="border rounded mb-2 p-2 bg-light">
+                                        <img src="{{ asset('storage/' . $profile->struktur_guru_image) }}" alt="Struktur Guru" class="img-fluid rounded">
+                                    </div>
+                                @endif
+                                <input type="file" name="struktur_guru_image" class="form-control-file @error('struktur_guru_image') is-invalid @enderror">
+                                <small class="form-text text-muted">Format JPG/PNG/WebP, maksimal 4 MB.</small>
+                                @error('struktur_guru_image')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Upload Gambar Struktur TU</label>
+                                @if($profile->struktur_tu_image)
+                                    <div class="border rounded mb-2 p-2 bg-light">
+                                        <img src="{{ asset('storage/' . $profile->struktur_tu_image) }}" alt="Struktur TU" class="img-fluid rounded">
+                                    </div>
+                                @endif
+                                <input type="file" name="struktur_tu_image" class="form-control-file @error('struktur_tu_image') is-invalid @enderror">
+                                <small class="form-text text-muted">Format JPG/PNG/WebP, maksimal 4 MB.</small>
+                                @error('struktur_tu_image')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 mb-3 h-100">
+                                    <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-chalkboard-teacher mr-1"></i> Struktur Organisasi Guru</h5>
+                                    @foreach($guruStructureFields as $fieldKey => $label)
+                                        <div class="form-group">
+                                            <label class="small text-muted">{{ $label }}</label>
+                                            <input
+                                                type="text"
+                                                name="struktur_guru[{{ $fieldKey }}]"
+                                                class="form-control @error('struktur_guru.' . $fieldKey) is-invalid @enderror"
+                                                value="{{ old('struktur_guru.' . $fieldKey, $strukturGuruValues[$fieldKey] ?? '') }}"
+                                                placeholder="Nama penanggung jawab"
+                                            >
+                                            @error('struktur_guru.' . $fieldKey)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 mb-3 h-100">
+                                    <h5 class="fw-bold mb-3 text-success"><i class="fas fa-users-cog mr-1"></i> Struktur Organisasi TU</h5>
+                                    @foreach($tuStructureFields as $fieldKey => $label)
+                                        <div class="form-group">
+                                            <label class="small text-muted">{{ $label }}</label>
+                                            <input
+                                                type="text"
+                                                name="struktur_tu[{{ $fieldKey }}]"
+                                                class="form-control @error('struktur_tu.' . $fieldKey) is-invalid @enderror"
+                                                value="{{ old('struktur_tu.' . $fieldKey, $strukturTuValues[$fieldKey] ?? '') }}"
+                                                placeholder="Nama penanggung jawab"
+                                            >
+                                            @error('struktur_tu.' . $fieldKey)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Maps Embed (iframe)</label>

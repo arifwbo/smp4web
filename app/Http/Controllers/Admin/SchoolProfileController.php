@@ -58,6 +58,12 @@ class SchoolProfileController extends Controller
             'misi' => 'required|string',
             'tujuan' => 'nullable|string',
             'struktur_organisasi' => 'nullable|string',
+            'struktur_guru' => 'nullable|array',
+            'struktur_guru.*' => 'nullable|string|max:255',
+            'struktur_tu' => 'nullable|array',
+            'struktur_tu.*' => 'nullable|string|max:255',
+            'struktur_guru_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'struktur_tu_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             'sambutan_kepsek' => 'nullable|string',
             'maps_embed' => 'nullable|string',
             'footer_description' => 'nullable|string',
@@ -83,6 +89,22 @@ class SchoolProfileController extends Controller
             } else {
                 cache()->forget('school_profile_favicon');
             }
+        }
+
+        if ($request->hasFile('struktur_guru_image')) {
+            $this->mediaService->delete($profile->struktur_guru_image);
+            $data['struktur_guru_image'] = $this->mediaService->storeImage(
+                $request->file('struktur_guru_image'),
+                'struktur-organisasi'
+            );
+        }
+
+        if ($request->hasFile('struktur_tu_image')) {
+            $this->mediaService->delete($profile->struktur_tu_image);
+            $data['struktur_tu_image'] = $this->mediaService->storeImage(
+                $request->file('struktur_tu_image'),
+                'struktur-organisasi'
+            );
         }
 
         unset($data['logo']);

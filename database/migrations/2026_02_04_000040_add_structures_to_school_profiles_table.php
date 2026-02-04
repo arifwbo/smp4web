@@ -1,0 +1,22 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('school_profiles', function (Blueprint $table) {
+            $table->json('struktur_guru')->nullable()->after('struktur_organisasi');
+            $table->json('struktur_tu')->nullable()->after('struktur_guru');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('school_profiles', function (Blueprint $table) {
+            $table->dropColumn(['struktur_guru', 'struktur_tu']);
+        });
+    }
+};

@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    @php
+        $fullProfile = cache()->remember('school_profile_full', 60, function () {
+            return \App\Models\SchoolProfile::select('nama_sekolah', 'logo_path')->first();
+        });
+
+        $logoPath = optional($fullProfile)->logo_path;
+        $uploadedLogoUrl = $logoPath ? asset('storage/' . $logoPath) : asset('img/logo-smp4.jpg');
+
+        $cachedFaviconPath = cache()->get('school_profile_favicon');
+        if (! $cachedFaviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists('branding/favicon.ico')) {
+            $cachedFaviconPath = 'branding/favicon.ico';
+        }
+
+        $adminFaviconUrl = $cachedFaviconPath
+            ? asset('storage/' . $cachedFaviconPath)
+            : $uploadedLogoUrl;
+
+        $adminBrandName = optional($fullProfile)->nama_sekolah ?? 'SMPN 4 Admin';
+    @endphp
+
+    <link rel="icon" href="{{ $adminFaviconUrl }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ $adminFaviconUrl }}" type="image/x-icon">
+
     <title>@yield('title', 'Panel Admin') - SMPN 4 Samarinda</title>
 
     <!-- AdminLTE & Dependencies -->
@@ -48,9 +72,15 @@
         }
 
         .nav-sidebar .nav-link {
-            border-radius: 0.5rem;
-            margin: 0 0.25rem;
+            border-radius: 0.65rem;
+            margin: 0 0.35rem 0.35rem;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            padding: 0.65rem 0.85rem;
+            position: relative;
         }
 
         .nav-sidebar .nav-link.active {
@@ -64,7 +94,15 @@
         }
 
         .nav-sidebar .nav-link .nav-icon {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: 0.95rem;
         }
 
         .nav-sidebar .nav-link:hover {
@@ -81,6 +119,23 @@
             left: -10px;
             top: 50%;
             transform: translateY(-50%);
+        }
+
+        .nav-sidebar .nav-link.active .nav-icon,
+        .nav-sidebar .nav-link:hover .nav-icon {
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .nav-header-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin: 1.25rem 1rem 0.5rem;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .sidebar {
+            padding-bottom: 2rem;
         }
 
         .main-header .badge-notif {
@@ -151,8 +206,8 @@
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="{{ route('admin.dashboard') }}" class="brand-link d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-smp4.jpg') }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity:.9" onerror="this.style.display='none'">
-            <span class="brand-text font-weight-semibold">SMPN 4 Admin</span>
+            <img src="{{ $uploadedLogoUrl }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity:.9" onerror="this.style.display='none'">
+            <span class="brand-text font-weight-semibold">{{ $adminBrandName }}</span>
         </a>
         <div class="sidebar">
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
@@ -185,6 +240,7 @@
 
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-header-label">Menu Utama</li>
                     @foreach($menuItems as $item)
                         @php $active = request()->routeIs($item['pattern']); @endphp
                         <li class="nav-item">
@@ -225,7 +281,7 @@
 
     <footer class="main-footer">
         <strong>&copy; {{ date('Y') }} SMP Negeri 4 Samarinda.</strong>
-        <span class="float-right d-none d-sm-inline">Versi AdminLTE</span>
+        <span class="float-right d-none d-sm-inline">Developed by arifwbo</span>
     </footer>
 </div>
 

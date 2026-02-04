@@ -98,8 +98,8 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Profil Sekolah</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profil') }}#identitas">Identitas Sekolah</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#sejarah">Sejarah</a></li>
+                            <li><a class="dropdown-item" href="{{ route('profil') }}#identitas">Identitas Sekolah</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#visi">Visi & Misi</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#struktur">Struktur Organisasi</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#riwayat-kepsek">Riwayat Kepala Sekolah</a></li>
