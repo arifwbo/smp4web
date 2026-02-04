@@ -52,6 +52,7 @@ class SchoolProfileController extends Controller
             'alamat' => 'required|string',
             'email' => 'required|email',
             'telepon' => 'required|string|max:50',
+            'whatsapp_number' => 'nullable|string|max:30',
             'sejarah' => 'nullable|string',
             'visi' => 'required|string',
             'misi' => 'required|string',
@@ -88,7 +89,8 @@ class SchoolProfileController extends Controller
 
         $profile->update($data);
 
-    cache()->forget('school_profile_public');
+        cache()->forget('school_profile_public');
+        cache()->forget('school_profile_full');
 
         ActivityLogger::log('profile.updated', 'Memperbarui profil sekolah');
 

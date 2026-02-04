@@ -6,21 +6,23 @@ use App\Models\Post;
 use App\Models\Teacher;
 use App\Models\Facility;
 use App\Models\Gallery;
+use App\Models\GalleryVideo;
 use App\Models\Message;
 use App\Models\Curriculum;
 use App\Models\AcademicSetting;
 use App\Models\HomeSlider;
 use App\Models\User;
+use App\Models\FormerPrincipal;
 use App\Notifications\ContactMessageNotification;
 
 class PublicController extends Controller {
     private function getCommonData() {
-        return SchoolProfile::first();
+        return cache()->remember('school_profile_full', 3600, fn () => SchoolProfile::first());
     }
 
     public function index() {
         $profil = $this->getCommonData();
-        $berita = Post::where('kategori', 'berita')->latest()->take(3)->get();
+        $berita = Post::where('kategori', 'berita')->latest()->take(4)->get();
         $pengumuman = Post::where('kategori', 'pengumuman')->latest()->take(3)->get();
         $agenda = Post::where('kategori', 'agenda')->latest()->take(3)->get();
 
@@ -64,11 +66,18 @@ class PublicController extends Controller {
         ]);
 
         $slides = $cachedSlides->isNotEmpty() ? $cachedSlides : $fallbackSlides;
+        $latestVideos = GalleryVideo::latest()->take(3)->get();
+        $latestPhotos = Gallery::latest()->take(6)->get();
 
-        return view('public.home', compact('profil', 'berita', 'pengumuman', 'agenda', 'slides'));
+        return view('public.home', compact('profil', 'berita', 'pengumuman', 'agenda', 'slides', 'latestVideos', 'latestPhotos'));
     }
     public function profil() {
-        return view('public.profil', ['profil' => $this->getCommonData()]);
+        $formerPrincipals = FormerPrincipal::orderBy('sort_order')->orderByDesc('id')->get();
+
+        return view('public.profil', [
+            'profil' => $this->getCommonData(),
+            'formerPrincipals' => $formerPrincipals,
+        ]);
     }
     public function guru() {
         $teachers = Teacher::orderBy('jenis')->orderBy('nama')->get();
@@ -91,13 +100,51 @@ class PublicController extends Controller {
         $ppdb = class_exists($ppdbModel) ? $ppdbModel::first() : null;
         return view('public.ppdb', ['profil' => $this->getCommonData(), 'ppdb' => $ppdb]);
     }
-    public function informasi() {
-        $posts = Post::latest()->paginate(10);
-        return view('public.informasi', ['profil' => $this->getCommonData(), 'posts' => $posts]);
+    public function informasi(Request $request) {
+        $profil = $this->getCommonData();
+        $categories = ['berita', 'informasi', 'pengumuman', 'agenda'];
+        $validFilters = array_merge(['semua'], $categories);
+        $activeCategory = strtolower($request->query('kategori', 'semua'));
+
+        if (! in_array($activeCategory, $validFilters, true)) {
+            $activeCategory = 'semua';
+        }
+
+        $postsQuery = Post::query()->latest();
+        if ($activeCategory === 'semua') {
+            $postsQuery->whereIn('kategori', $categories);
+        } else {
+            $postsQuery->where('kategori', $activeCategory);
+        }
+
+        $posts = $postsQuery->paginate(9)->withQueryString();
+
+        $countsRaw = Post::selectRaw('kategori, COUNT(*) as total')
+            ->whereIn('kategori', $categories)
+            ->groupBy('kategori')
+            ->pluck('total', 'kategori');
+
+        $categoryCounts = [];
+        foreach ($categories as $category) {
+            $categoryCounts[$category] = $countsRaw->get($category, 0);
+        }
+
+        $groupedPosts = collect($categories)->mapWithKeys(function ($category) {
+            return [$category => Post::where('kategori', $category)->latest()->take(4)->get()];
+        });
+
+        return view('public.informasi', [
+            'profil' => $profil,
+            'posts' => $posts,
+            'activeCategory' => $activeCategory,
+            'categoryCounts' => $categoryCounts,
+            'groupedPosts' => $groupedPosts,
+        ]);
     }
     public function galeri() {
         $galleries = Gallery::latest()->paginate(12);
-        return view('public.galeri', ['profil' => $this->getCommonData(), 'galleries' => $galleries]);
+        $videos = GalleryVideo::latest()->take(8)->get();
+        return view('public.galeri', ['profil' => $this->getCommonData(), 'galleries' => $galleries, 'videos' => $videos]);
     }
     public function kontak() {
         return view('public.kontak', ['profil' => $this->getCommonData()]);

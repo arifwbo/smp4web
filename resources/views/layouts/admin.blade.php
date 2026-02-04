@@ -169,6 +169,7 @@
                 $menuItems = [
                     ['label' => 'Dashboard', 'icon' => 'fas fa-gauge', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard'],
                     ['label' => 'Profil Sekolah', 'icon' => 'fas fa-school', 'route' => 'admin.profile.edit', 'pattern' => 'admin.profile.*'],
+                    ['label' => 'Kepala Sekolah', 'icon' => 'fas fa-user-tie', 'route' => 'admin.former-principals.index', 'pattern' => 'admin.former-principals.*'],
                     ['label' => 'Slider Beranda', 'icon' => 'fas fa-images', 'route' => 'admin.home-sliders.index', 'pattern' => 'admin.home-sliders.*'],
                     ['label' => 'Berita', 'icon' => 'fas fa-newspaper', 'route' => 'admin.posts.index', 'pattern' => 'admin.posts.*'],
                     ['label' => 'GTK', 'icon' => 'fas fa-user-graduate', 'route' => 'admin.teachers.index', 'pattern' => 'admin.teachers.*'],
@@ -176,6 +177,7 @@
                     ['label' => 'Halaman Akademik', 'icon' => 'fas fa-graduation-cap', 'route' => 'admin.academic.edit', 'pattern' => 'admin.academic.*'],
                     ['label' => 'PPDB', 'icon' => 'fas fa-address-card', 'route' => 'admin.ppdb.index', 'pattern' => 'admin.ppdb.*'],
                     ['label' => 'Galeri', 'icon' => 'fas fa-images', 'route' => 'admin.galleries.index', 'pattern' => 'admin.galleries.*'],
+                    ['label' => 'Galeri Video', 'icon' => 'fas fa-video', 'route' => 'admin.gallery-videos.index', 'pattern' => 'admin.gallery-videos.*'],
                     ['label' => 'Pesan', 'icon' => 'fas fa-inbox', 'route' => 'admin.messages.index', 'pattern' => 'admin.messages.*'],
                     ['label' => 'Log Aktivitas', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.logs.index', 'pattern' => 'admin.logs.index'],
                 ];

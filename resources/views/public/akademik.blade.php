@@ -80,7 +80,7 @@
     </div>
 </section>
 
-<section class="py-5 bg-light">
+<section class="py-5 bg-light" id="kurikulum">
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-primary-custom">Fondasi Kurikulum</h2>
@@ -109,12 +109,12 @@
     </div>
 </section>
 
-<section class="py-5">
+<section class="py-5" id="muatan-lokal">
     <div class="container">
         <div class="row align-items-start g-4">
             <div class="col-lg-6">
-                <h3 class="fw-bold text-primary-custom mb-3">Struktur Jam Pelajaran</h3>
-                <p class="text-muted">Distribusi jam pelajaran mengikuti ketentuan Kemendikbudristek serta kebutuhan lokal sekolah.</p>
+                <h3 class="fw-bold text-primary-custom mb-3">Struktur Jam & Muatan Lokal</h3>
+                <p class="text-muted">Distribusi jam pelajaran mengikuti ketentuan Kemendikbudristek serta muatan lokal khas sekolah.</p>
                 <div class="table-responsive rounded-4 shadow-sm">
                     <table class="table table-bordered mb-0 align-middle">
                         <thead class="table-primary">
@@ -154,7 +154,7 @@
     </div>
 </section>
 
-<section class="py-5 bg-light">
+<section class="py-5 bg-light" id="program-unggulan">
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold">Program Unggulan</h2>

@@ -170,6 +170,17 @@ SVG;
                             @error('telepon')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
+                            <label>Nomor WhatsApp</label>
+                            <div class="input-group @error('whatsapp_number') has-validation @enderror">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fab fa-whatsapp text-success"></i></span>
+                                </div>
+                                <input type="text" name="whatsapp_number" class="form-control @error('whatsapp_number') is-invalid @enderror" placeholder="Contoh: 6281234567890" value="{{ old('whatsapp_number', $profile->whatsapp_number) }}">
+                                @error('whatsapp_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <small class="form-text text-muted">Gunakan format internasional tanpa simbol atau spasi.</small>
+                        </div>
+                        <div class="form-group">
                             <label>Deskripsi Singkat Footer</label>
                             <textarea name="footer_description" rows="3" class="form-control @error('footer_description') is-invalid @enderror" placeholder="Tuliskan tagline atau misi singkat sekolah">{{ old('footer_description', $profile->footer_description) }}</textarea>
                             @error('footer_description')<div class="invalid-feedback">{{ $message }}</div>@enderror

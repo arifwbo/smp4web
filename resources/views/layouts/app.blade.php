@@ -18,6 +18,7 @@
                 'instagram_url',
                 'youtube_url',
                 'logo_path',
+                'whatsapp_number',
             ])->first();
         });
 
@@ -55,6 +56,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/whatsapp-button.css') }}" rel="stylesheet">
+    @stack('styles')
 </head>
 <body>
     <!-- Top Bar -->
@@ -99,23 +102,24 @@
                             <li><a class="dropdown-item" href="{{ route('profil') }}#sejarah">Sejarah</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#visi">Visi & Misi</a></li>
                             <li><a class="dropdown-item" href="{{ route('profil') }}#struktur">Struktur Organisasi</a></li>
+                            <li><a class="dropdown-item" href="{{ route('profil') }}#riwayat-kepsek">Riwayat Kepala Sekolah</a></li>
                         </ul>
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">GTK</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('guru') }}">Kepala Sekolah & Guru</a></li>
-                            <li><a class="dropdown-item" href="#">Tenaga Kependidikan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('guru') }}#pendidik">Kepala Sekolah & Guru</a></li>
+                            <li><a class="dropdown-item" href="{{ route('guru') }}#tendik">Tenaga Kependidikan</a></li>
                         </ul>
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Akademik</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('akademik') }}">Kurikulum</a></li>
-                            <li><a class="dropdown-item" href="#">Muatan Lokal</a></li>
-                            <li><a class="dropdown-item" href="#">Program Unggulan</a></li>
+                            <li><a class="dropdown-item" href="{{ route('akademik') }}#kurikulum">Kurikulum</a></li>
+                            <li><a class="dropdown-item" href="{{ route('akademik') }}#muatan-lokal">Muatan Lokal</a></li>
+                            <li><a class="dropdown-item" href="{{ route('akademik') }}#program-unggulan">Program Unggulan</a></li>
                         </ul>
                     </li>
 
@@ -124,9 +128,12 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Informasi</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('informasi') }}">Berita Sekolah</a></li>
-                            <li><a class="dropdown-item" href="#">Pengumuman</a></li>
-                            <li><a class="dropdown-item" href="#">Agenda</a></li>
+                            <li><a class="dropdown-item fw-semibold text-primary" href="{{ route('informasi') }}">Halaman Informasi</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('informasi', ['kategori' => 'berita']) }}">Berita Sekolah</a></li>
+                            <li><a class="dropdown-item" href="{{ route('informasi', ['kategori' => 'informasi']) }}">Informasi Umum</a></li>
+                            <li><a class="dropdown-item" href="{{ route('informasi', ['kategori' => 'pengumuman']) }}">Pengumuman</a></li>
+                            <li><a class="dropdown-item" href="{{ route('informasi', ['kategori' => 'agenda']) }}">Agenda</a></li>
                         </ul>
                     </li>
 
@@ -177,6 +184,10 @@
         @yield('content')
     </main>
 
+    @include('components.whatsapp-button', [
+        'whatsappNumber' => optional($publicProfile)->whatsapp_number,
+    ])
+
     <footer class="pt-5 pb-3 mt-5 border-top border-secondary">
         <div class="container">
             <div class="row g-4">
@@ -217,6 +228,7 @@
 
     <!-- PERBAIKAN: Menghapus markdown syntax pada script src -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/whatsapp-button.js') }}" defer></script>
     <script src="{{ asset('js/custom.js') }}"></script>
     @stack('scripts')
 </body>

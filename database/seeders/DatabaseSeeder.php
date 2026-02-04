@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\Teacher;
 use App\Models\Facility;
 use App\Models\Ppdb;
+use App\Models\FormerPrincipal;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -68,6 +69,35 @@ class DatabaseSeeder extends Seeder
                 'konten' => 'Pendaftaran dibuka mulai 1 Juli. Syarat: KK Asli, Akta Kelahiran.',
                 'status' => 'buka',
                 'link_daftar' => 'https://forms.google.com/example',
+            ]);
+        }
+
+        if (FormerPrincipal::count() == 0) {
+            FormerPrincipal::insert([
+                [
+                    'name' => 'Drs. H. Muhammad Rahman',
+                    'period' => '1995 - 2002',
+                    'description' => 'Mengawali program Adiwiyata dan penguatan karakter siswa.',
+                    'sort_order' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'name' => 'Dra. Hj. Siti Norhayati',
+                    'period' => '2002 - 2010',
+                    'description' => 'Berhasil meraih akreditasi A dan memperluas fasilitas laboratorium.',
+                    'sort_order' => 2,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'name' => 'H. Surya Nugraha, M.Pd',
+                    'period' => '2010 - 2018',
+                    'description' => 'Fokus pada inovasi pembelajaran berbasis teknologi dan prestasi akademik.',
+                    'sort_order' => 3,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
             ]);
         }
 

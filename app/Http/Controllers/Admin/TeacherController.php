@@ -82,4 +82,86 @@ class TeacherController extends Controller
             'foto' => ['nullable', 'image', 'max:2048'],
         ]);
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt'],
+        ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        if (! $handle) {
+            return redirect()->route('admin.teachers.index')->with('error', 'File tidak dapat dibaca.');
+        }
+
+        $header = null;
+        $imported = 0;
+        $skipped = 0;
+        $requiredColumns = ['nama', 'jenis'];
+
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+            if (! $header) {
+                $header = collect($row)
+                    ->map(fn ($value) => strtolower(trim($value)))
+                    ->filter()
+                    ->values()
+                    ->toArray();
+
+                $missing = array_diff($requiredColumns, $header);
+                if (! empty($missing)) {
+                    fclose($handle);
+                    return redirect()->route('admin.teachers.index')->with('error', 'Kolom wajib (nama, jenis) tidak ditemukan pada baris header.');
+                }
+                continue;
+            }
+
+            if (count(array_filter($row)) === 0) {
+                continue;
+            }
+
+            $data = [];
+            foreach ($header as $index => $column) {
+                $data[$column] = trim($row[$index] ?? '');
+            }
+
+            $payload = [
+                'nama' => $data['nama'] ?? '',
+                'nip' => $data['nip'] ?? null,
+                'jabatan' => $data['jabatan'] ?? null,
+                'jenis' => strtolower($data['jenis'] ?? ''),
+            ];
+
+            if ($payload['nama'] === '' || ! in_array($payload['jenis'], ['pendidik', 'tendik'], true)) {
+                $skipped++;
+                continue;
+            }
+
+            $payload['nip'] = $payload['nip'] !== '' ? $payload['nip'] : null;
+            $payload['jabatan'] = $payload['jabatan'] !== '' ? $payload['jabatan'] : null;
+
+            $criteria = $payload['nip']
+                ? ['nip' => $payload['nip']]
+                : ['nama' => $payload['nama'], 'jenis' => $payload['jenis']];
+
+            Teacher::updateOrCreate($criteria, $payload);
+            $imported++;
+        }
+
+        fclose($handle);
+
+        if ($imported > 0) {
+            ActivityLogger::log('teacher.imported', "Import massal guru/tendik: {$imported} baris.");
+        }
+
+        $message = $imported > 0
+            ? "{$imported} data berhasil diimpor."
+            : 'Tidak ada data yang diimpor.';
+        if ($skipped) {
+            $message .= " {$skipped} baris dilewati karena tidak valid.";
+        }
+
+        return redirect()->route('admin.teachers.index')->with('success', $message);
+    }
 }

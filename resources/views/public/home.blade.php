@@ -94,11 +94,12 @@ SVG;
 </section>
 
 <!-- BERITA & AGENDA -->
-<section class="py-5 bg-white">
+<section class="py-5 bg-white" id="berita">
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-primary-custom">Berita & Informasi</h2>
             <p class="text-muted">Update kegiatan dan informasi terkini dari sekolah.</p>
+            <a href="{{ route('informasi') }}" class="btn btn-outline-primary rounded-pill px-4">Lihat Semua Berita & Informasi</a>
         </div>
         <div class="row g-4">
             <div class="col-lg-8">
@@ -118,23 +119,91 @@ SVG;
             </div>
             <div class="col-lg-4">
                 <div class="bg-light p-4 rounded h-100">
-                    <h4 class="fw-bold mb-4 text-primary-custom">Agenda & Pengumuman</h4>
-                    <ul class="list-group list-group-flush bg-transparent">
-                        @foreach($pengumuman as $info)
-                        <li class="list-group-item bg-transparent border-0 px-0">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1 fw-bold"><a href="{{ route('berita.detail', $info->slug) }}" class="text-dark text-decoration-none">{{ $info->judul }}</a></h6>
+                    <div id="pengumuman">
+                        <h4 class="fw-bold mb-3 text-primary-custom">Pengumuman</h4>
+                        <ul class="list-group list-group-flush bg-transparent">
+                            @foreach($pengumuman as $info)
+                            <li class="list-group-item bg-transparent border-0 px-0">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold"><a href="{{ route('berita.detail', $info->slug) }}" class="text-dark text-decoration-none">{{ $info->judul }}</a></h6>
+                                </div>
+                                <small class="text-muted">{{ $info->created_at->format('d M Y') }}</small>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <hr class="my-4">
+                    <div id="agenda">
+                        <h4 class="fw-bold mb-3 text-primary-custom">Agenda Kegiatan</h4>
+                        <ul class="list-group list-group-flush bg-transparent">
+                            @foreach($agenda as $ag)
+                            <li class="list-group-item bg-transparent border-0 px-0">
+                                <span class="badge bg-warning text-dark mb-1">Agenda</span>
+                                <h6 class="mb-1 fw-bold"><a href="{{ route('berita.detail', $ag->slug) }}" class="text-dark text-decoration-none">{{ $ag->judul }}</a></h6>
+                                <small class="text-muted">{{ $ag->created_at->format('d M Y') }}</small>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- GALERI TERBARU -->
+<section class="py-5 bg-light border-top" id="galeri-terbaru">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-primary-custom">Galeri Terbaru</h2>
+            <p class="text-muted mb-0">Cuplikan singkat video dan foto aktivitas terbaru di SMPN 4 Samarinda.</p>
+            <a href="{{ route('galeri') }}" class="btn btn-outline-primary rounded-pill px-4 mt-3">Lihat Semua Koleksi</a>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="bg-white rounded-4 shadow-sm h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Video Terbaru</h5>
+                        <span class="badge bg-primary">{{ $latestVideos->count() }} Video</span>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        @forelse($latestVideos as $video)
+                        <div class="card border-0 shadow-sm">
+                            <div class="ratio ratio-16x9 rounded-top overflow-hidden">
+                                <iframe src="{{ $video->embed_url }}" title="{{ $video->judul }}" allowfullscreen loading="lazy"></iframe>
                             </div>
-                            <small class="text-muted">{{ $info->created_at->format('d M Y') }}</small>
-                        </li>
-                        @endforeach
-                        @foreach($agenda as $ag)
-                        <li class="list-group-item bg-transparent border-0 px-0">
-                            <span class="badge bg-warning text-dark mb-1">Agenda</span>
-                            <h6 class="mb-1 fw-bold"><a href="{{ route('berita.detail', $ag->slug) }}" class="text-dark text-decoration-none">{{ $ag->judul }}</a></h6>
-                        </li>
-                        @endforeach
-                    </ul>
+                            <div class="card-body">
+                                <h6 class="fw-semibold mb-1">{{ $video->judul }}</h6>
+                                <p class="text-muted small mb-2">{{ Str::limit($video->deskripsi, 80) }}</p>
+                                <a href="https://www.youtube.com/watch?v={{ $video->youtube_id }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">Buka di YouTube</a>
+                            </div>
+                        </div>
+                        @empty
+                        <p class="text-muted mb-0">Belum ada video yang diunggah.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="bg-white rounded-4 shadow-sm h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Foto Terbaru</h5>
+                        <span class="badge bg-success">{{ $latestPhotos->count() }} Foto</span>
+                    </div>
+                    <div class="row g-3">
+                        @forelse($latestPhotos as $photo)
+                        <div class="col-6">
+                            <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm position-relative">
+                                <img src="{{ asset('storage/' . $photo->gambar) }}" alt="{{ $photo->judul }}" class="w-100 h-100" style="object-fit: cover;">
+                                <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-50 text-white small px-2 py-1">{{ Str::limit($photo->judul, 30) }}</div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-12">
+                            <p class="text-muted mb-0">Belum ada foto terbaru.</p>
+                        </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </div>

@@ -40,6 +40,11 @@
     }
 </style>
 
+@php
+    use Illuminate\Support\Str;
+    $formerPrincipals = $formerPrincipals ?? collect();
+@endphp
+
 <div class="container pb-5">
         @php
             $logoCardPlaceholder = <<<SVG
@@ -96,6 +101,34 @@ SVG;
                         {!! $profil?->sambutan_kepsek ?? '<p>Belum ada sambutan kepala sekolah.</p>' !!}
                     </div>
                 </div>
+            </div>
+        </div>
+    @endif
+
+    @if($formerPrincipals->isNotEmpty())
+        <div class="profile-card p-4 mb-5" id="riwayat-kepsek">
+            <p class="profile-section-title">Jejak Kepemimpinan</p>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <h3 class="fw-bold text-primary-custom mb-0">Kepala Sekolah Terdahulu</h3>
+                <span class="badge bg-light text-dark">Total {{ $formerPrincipals->count() }} orang</span>
+            </div>
+            <div class="row g-4">
+                @foreach($formerPrincipals as $former)
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3 align-items-start p-3 rounded shadow-sm h-100" style="background:#f8fafc;">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle overflow-hidden" style="width:80px;height:80px;background:#e2e8f0;">
+                                    <img src="{{ $former->photo_url }}" alt="{{ $former->name }}" class="w-100 h-100" style="object-fit:cover;">
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">{{ $former->name }}</h5>
+                                <span class="badge bg-warning text-dark mb-2">{{ $former->period ?? 'Periode tidak tersedia' }}</span>
+                                <p class="text-muted small mb-0">{{ Str::limit($former->description, 180, '...') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     @endif
