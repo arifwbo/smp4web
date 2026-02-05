@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     public const ROLE_ADMIN = 'admin';
-    public const ROLE_PUBLIC = 'public';
+    public const ROLE_USER = 'user';
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -25,6 +25,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_active',
+        'profile_photo',
     ];
 
     /**
@@ -47,11 +49,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

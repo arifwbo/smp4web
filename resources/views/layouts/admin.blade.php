@@ -23,6 +23,9 @@
             : $uploadedLogoUrl;
 
         $adminBrandName = optional($fullProfile)->nama_sekolah ?? 'SMPN 4 Admin';
+        $shortBrandName = $adminBrandName
+            ? trim(collect(explode(' ', $adminBrandName))->take(3)->join(' '))
+            : 'SMP Negeri 4';
     @endphp
 
     <link rel="icon" href="{{ $adminFaviconUrl }}" type="image/x-icon">
@@ -63,12 +66,22 @@
         }
 
         .brand-link {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.04);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 0.75rem;
+            min-height: 70px;
         }
 
         .brand-link .brand-text {
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+        }
+
+        .brand-link .brand-image {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            background: #fff;
+            padding: 0.25rem;
         }
 
         .nav-sidebar .nav-link {
@@ -105,6 +118,10 @@
             font-size: 0.95rem;
         }
 
+        .nav-sidebar .nav-item + .nav-item {
+            margin-top: 0.2rem;
+        }
+
         .nav-sidebar .nav-link:hover {
             background: rgba(255, 255, 255, 0.08);
         }
@@ -135,7 +152,131 @@
         }
 
         .sidebar {
-            padding-bottom: 2rem;
+            padding: 0 1rem 2rem;
+        }
+
+        .sidebar-inner {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar-user-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .sidebar-user-card .image img {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-user-card .info a {
+            font-weight: 600;
+        }
+
+        .sidebar-menu-card {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.25rem 0.75rem 1.5rem;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-menu-card .nav {
+            flex: 1;
+        }
+
+        .sidebar-mini.sidebar-collapse .brand-link {
+            justify-content: center;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .brand-link,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link {
+            justify-content: flex-start;
+        }
+
+        .sidebar-mini.sidebar-collapse .brand-link .brand-text,
+        .sidebar-mini.sidebar-collapse .nav-header-label,
+        .sidebar-mini.sidebar-collapse .sidebar-user-card {
+            display: none !important;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .brand-link .brand-text,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link .brand-text {
+            display: inline-block !important;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .nav-header-label,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-header-label,
+        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-user-card,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-user-card {
+            display: block !important;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-user-card,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-user-card {
+            display: flex !important;
+        }
+
+        .sidebar-mini.sidebar-collapse .sidebar {
+            padding: 0.75rem 0.45rem 1rem;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar {
+            padding: 0 1rem 2rem;
+        }
+
+        .sidebar-mini.sidebar-collapse .sidebar-menu-card {
+            padding: 0.5rem 0.3rem 1rem;
+            border-radius: 1rem;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-menu-card,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-menu-card {
+            padding: 1.25rem 0.75rem 1.5rem;
+        }
+
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link {
+            justify-content: center;
+            margin: 0.25rem 0.15rem;
+            padding: 0.65rem 0.25rem;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link {
+            justify-content: flex-start;
+            margin: 0 0.35rem 0.35rem;
+            padding: 0.65rem 0.85rem;
+        }
+
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link p,
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link::before {
+            display: none !important;
+        }
+
+        .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link p,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link::before,
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link p,
+        .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link::before {
+            display: block !important;
+        }
+
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link .nav-icon {
+            margin: 0;
         }
 
         .main-header .badge-notif {
@@ -143,6 +284,8 @@
             color: #1f2937;
             font-weight: 600;
         }
+
+        /* Gunakan gaya collapse bawaan AdminLTE */
     </style>
 
     @stack('styles')
@@ -207,20 +350,21 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="{{ route('admin.dashboard') }}" class="brand-link d-flex align-items-center gap-2">
             <img src="{{ $uploadedLogoUrl }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity:.9" onerror="this.style.display='none'">
-            <span class="brand-text font-weight-semibold">{{ $adminBrandName }}</span>
+            <span class="brand-text font-weight-semibold">{{ $shortBrandName }}</span>
         </a>
         <div class="sidebar">
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                <div class="image">
-                    <img src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim(auth()->user()->email ?? 'admin@smpn4.test'))) }}?s=160&d=identicon" class="img-circle elevation-2" alt="User Image">
+            <div class="sidebar-inner">
+                <div class="sidebar-user-card mt-3">
+                    <div class="image">
+                        <img src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim(auth()->user()->email ?? 'admin@smpn4.test'))) }}?s=160&d=identicon" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block mb-1">{{ auth()->user()->name ?? 'Administrator' }}</a>
+                        <span class="text-muted small d-block">Administrator</span>
+                    </div>
                 </div>
-                <div class="info">
-                    <a href="#" class="d-block">{{ auth()->user()->name ?? 'Administrator' }}</a>
-                    <span class="text-muted small">Admin</span>
-                </div>
-            </div>
 
-            @php
+                @php
                 $menuItems = [
                     ['label' => 'Dashboard', 'icon' => 'fas fa-gauge', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard'],
                     ['label' => 'Profil Sekolah', 'icon' => 'fas fa-school', 'route' => 'admin.profile.edit', 'pattern' => 'admin.profile.*'],
@@ -234,24 +378,26 @@
                     ['label' => 'Galeri', 'icon' => 'fas fa-images', 'route' => 'admin.galleries.index', 'pattern' => 'admin.galleries.*'],
                     ['label' => 'Galeri Video', 'icon' => 'fas fa-video', 'route' => 'admin.gallery-videos.index', 'pattern' => 'admin.gallery-videos.*'],
                     ['label' => 'Pesan', 'icon' => 'fas fa-inbox', 'route' => 'admin.messages.index', 'pattern' => 'admin.messages.*'],
+                    ['label' => 'Pengguna', 'icon' => 'fas fa-users-cog', 'route' => 'admin.users.index', 'pattern' => 'admin.users.*'],
                     ['label' => 'Log Aktivitas', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.logs.index', 'pattern' => 'admin.logs.index'],
                 ];
-            @endphp
+                @endphp
 
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <li class="nav-header-label">Menu Utama</li>
-                    @foreach($menuItems as $item)
-                        @php $active = request()->routeIs($item['pattern']); @endphp
-                        <li class="nav-item">
-                            <a href="{{ route($item['route']) }}" class="nav-link {{ $active ? 'active' : '' }}">
-                                <i class="nav-icon {{ $item['icon'] }}"></i>
-                                <p>{{ $item['label'] }}</p>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </nav>
+                <nav class="sidebar-menu-card">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-header-label">Menu Utama</li>
+                        @foreach($menuItems as $item)
+                            @php $active = request()->routeIs($item['pattern']); @endphp
+                            <li class="nav-item">
+                                <a href="{{ route($item['route']) }}" class="nav-link {{ $active ? 'active' : '' }}">
+                                    <i class="nav-icon {{ $item['icon'] }}"></i>
+                                    <p>{{ $item['label'] }}</p>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </nav>
+            </div>
         </div>
     </aside>
 
@@ -337,7 +483,31 @@
         });
     };
 
-    document.addEventListener('DOMContentLoaded', initWysiwygEditors);
+    const initSidebarBehavior = () => {
+        document.body.classList.remove('sidebar-collapse');
+
+        const ensureExpanded = () => {
+            if (window.innerWidth >= 992) {
+                document.body.classList.remove('sidebar-collapse');
+            }
+        };
+
+        window.addEventListener('resize', ensureExpanded);
+
+        if (window.jQuery && typeof window.jQuery.fn.PushMenu === 'function') {
+            window.jQuery('[data-widget="pushmenu"]').PushMenu({
+                autoCollapseSize: false,
+                enableRemember: false,
+                expandOnHover: true,
+                expandTransitionDelay: 150
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initWysiwygEditors();
+        initSidebarBehavior();
+    });
 </script>
 @stack('scripts')
 </body>

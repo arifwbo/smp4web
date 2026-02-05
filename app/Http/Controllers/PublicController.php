@@ -17,14 +17,16 @@ use App\Notifications\ContactMessageNotification;
 
 class PublicController extends Controller {
     private function getCommonData() {
-        return cache()->remember('school_profile_full', 3600, fn () => SchoolProfile::first());
+        return SchoolProfile::first();
     }
 
     public function index() {
         $profil = $this->getCommonData();
         $berita = Post::where('kategori', 'berita')->latest()->take(4)->get();
         $pengumuman = Post::where('kategori', 'pengumuman')->latest()->take(3)->get();
+        $latestPengumuman = $pengumuman->first();
         $agenda = Post::where('kategori', 'agenda')->latest()->take(3)->get();
+        $featuredTeachers = Teacher::inRandomOrder()->take(9)->get();
 
         $cachedSlides = cache()->remember('home_sliders', 60, function () {
             return HomeSlider::where('is_active', true)
@@ -69,7 +71,7 @@ class PublicController extends Controller {
         $latestVideos = GalleryVideo::latest()->take(3)->get();
         $latestPhotos = Gallery::latest()->take(6)->get();
 
-        return view('public.home', compact('profil', 'berita', 'pengumuman', 'agenda', 'slides', 'latestVideos', 'latestPhotos'));
+        return view('public.home', compact('profil', 'berita', 'pengumuman', 'latestPengumuman', 'agenda', 'slides', 'featuredTeachers', 'latestVideos', 'latestPhotos'));
     }
     public function profil() {
         $formerPrincipals = FormerPrincipal::orderBy('sort_order')->orderByDesc('id')->get();

@@ -33,7 +33,7 @@
 <!-- INFO CARDS -->
 <div class="container info-cards">
     <div class="row g-4">
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
             <div class="info-card-item text-center">
                 <div class="info-icon"><i class="fas fa-school"></i></div>
                 <h4 class="fw-bold mb-3">Identitas Sekolah</h4>
@@ -41,7 +41,7 @@
                 <a href="{{ route('profil') }}" class="btn btn-link text-decoration-none fw-bold text-primary-custom">Selengkapnya <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
             <div class="info-card-item text-center">
                 <div class="info-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                 <h4 class="fw-bold mb-3">Guru & Tendik</h4>
@@ -49,12 +49,24 @@
                 <a href="{{ route('guru') }}" class="btn btn-link text-decoration-none fw-bold text-primary-custom">Lihat Data <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
             <div class="info-card-item text-center">
                 <div class="info-icon"><i class="fas fa-user-graduate"></i></div>
                 <h4 class="fw-bold mb-3">PPDB Online</h4>
                 <p class="text-muted small">Informasi pendaftaran siswa baru, jadwal, dan persyaratan.</p>
                 <a href="{{ route('ppdb') }}" class="btn btn-link text-decoration-none fw-bold text-primary-custom">Daftar Sekarang <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="info-card-item text-center">
+                <div class="info-icon"><i class="fas fa-bullhorn"></i></div>
+                <h4 class="fw-bold mb-3">Pengumuman</h4>
+                <p class="text-muted small mb-3">
+                    {{ $latestPengumuman ? Str::limit(strip_tags($latestPengumuman->judul), 80) : 'Belum ada pengumuman terbaru. Pantau terus laman informasi sekolah.' }}
+                </p>
+                <a href="{{ $latestPengumuman ? route('berita.detail', $latestPengumuman->slug) : route('informasi', ['kategori' => 'pengumuman']) }}" class="btn btn-link text-decoration-none fw-bold text-primary-custom">
+                    {{ $latestPengumuman ? 'Baca Pengumuman' : 'Lihat Semua Pengumuman' }} <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -92,6 +104,182 @@ SVG;
         </div>
     </div>
 </section>
+
+@if($featuredTeachers->isNotEmpty())
+@php
+    $shuffledTeachers = $featuredTeachers->shuffle();
+    $gtkSlides = $shuffledTeachers->chunk(3);
+    $teacherDataset = $featuredTeachers->map(function ($teacher) {
+        return [
+            'nama' => $teacher->nama,
+            'jabatan' => $teacher->jabatan ?? 'Tenaga Kependidikan',
+            'nip' => $teacher->nip,
+            'jenis' => $teacher->jenis ? strtoupper($teacher->jenis) : null,
+            'foto' => $teacher->foto
+                ? asset('storage/' . $teacher->foto)
+                : 'https://ui-avatars.com/api/?name=' . urlencode($teacher->nama) . '&background=003366&color=ffffff',
+        ];
+    });
+@endphp
+<section class="py-5 gtk-highlight" id="gtk-highlight">
+    <div class="container">
+        <div class="d-flex flex-column justify-content-center align-items-center text-center gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold text-primary-custom mb-0">Guru &amp; Tenaga Kependidikan</h2>
+            </div>
+            <a href="{{ route('guru') }}" class="btn btn-primary-custom rounded-pill px-4 shadow-sm">Lihat Daftar Lengkap</a>
+        </div>
+
+        <div id="gtkCarousel" class="carousel slide gtk-carousel" data-bs-ride="carousel" data-bs-interval="4800" data-bs-touch="true">
+            <div class="carousel-inner">
+                @foreach($gtkSlides as $slide)
+                    <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                        <div class="row g-4 justify-content-center">
+                            @foreach($slide as $teacher)
+                                @php
+                                    $photoUrl = $teacher->foto
+                                        ? asset('storage/' . $teacher->foto)
+                                        : 'https://ui-avatars.com/api/?name=' . urlencode($teacher->nama) . '&background=003366&color=ffffff';
+                                @endphp
+                                <div class="col-md-4">
+                                    <div class="gtk-card text-center h-100">
+                                        <div class="gtk-photo mb-3">
+                                            <img src="{{ $photoUrl }}" alt="{{ $teacher->nama }}" loading="lazy">
+                                        </div>
+                                        <h5 class="fw-bold mb-1">{{ $teacher->nama }}</h5>
+                                        <p class="text-muted small mb-2">{{ $teacher->jabatan ?? 'Tenaga Kependidikan' }}</p>
+                                        @if($teacher->nip)
+                                            <p class="text-muted small mb-2">NIP: {{ $teacher->nip }}</p>
+                                        @endif
+                                        @if($teacher->jenis)
+                                            <span class="badge bg-warning text-dark">{{ Str::upper($teacher->jenis) }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            @if($gtkSlides->count() > 1)
+                <button class="carousel-control-prev" type="button" data-bs-target="#gtkCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Sebelumnya</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#gtkCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Berikutnya</span>
+                </button>
+            @endif
+        </div>
+    </div>
+</section>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const gtkCarousel = document.getElementById('gtkCarousel');
+    const teacherPool = @json($teacherDataset);
+
+    if (!gtkCarousel || !Array.isArray(teacherPool) || teacherPool.length === 0) {
+        return;
+    }
+
+    const slides = gtkCarousel.querySelectorAll('.carousel-item');
+    if (!slides.length) {
+        return;
+    }
+
+    const shuffleArray = (array) => {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    };
+
+    const buildCard = (teacher) => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+
+        const card = document.createElement('div');
+        card.className = 'gtk-card text-center h-100';
+
+        const photoWrapper = document.createElement('div');
+        photoWrapper.className = 'gtk-photo mb-3';
+
+        const img = document.createElement('img');
+        img.src = teacher.foto;
+        img.alt = teacher.nama;
+        img.loading = 'lazy';
+        photoWrapper.appendChild(img);
+        card.appendChild(photoWrapper);
+
+        const nameEl = document.createElement('h5');
+        nameEl.className = 'fw-bold mb-1';
+        nameEl.textContent = teacher.nama;
+        card.appendChild(nameEl);
+
+        if (teacher.jabatan) {
+            const roleEl = document.createElement('p');
+            roleEl.className = 'text-muted small mb-2';
+            roleEl.textContent = teacher.jabatan;
+            card.appendChild(roleEl);
+        }
+
+        if (teacher.nip) {
+            const nipEl = document.createElement('p');
+            nipEl.className = 'text-muted small mb-2';
+            nipEl.textContent = `NIP: ${teacher.nip}`;
+            card.appendChild(nipEl);
+        }
+
+        if (teacher.jenis) {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-warning text-dark';
+            badge.textContent = teacher.jenis;
+            card.appendChild(badge);
+        }
+
+        col.appendChild(card);
+        return col;
+    };
+
+    const renderSlides = () => {
+        const randomized = shuffleArray(teacherPool);
+        slides.forEach((slide, index) => {
+            const row = slide.querySelector('.row');
+            if (!row) {
+                return;
+            }
+
+            row.innerHTML = '';
+            const start = index * 3;
+            let chunk = randomized.slice(start, start + 3);
+
+            if (chunk.length < 3) {
+                const replenished = shuffleArray(teacherPool);
+                chunk = chunk.concat(replenished.slice(0, 3 - chunk.length));
+            }
+
+            chunk.forEach((teacher) => {
+                row.appendChild(buildCard(teacher));
+            });
+        });
+    };
+
+    renderSlides();
+
+    gtkCarousel.addEventListener('slid.bs.carousel', (event) => {
+        if (typeof event.to === 'number' && event.to === 0) {
+            renderSlides();
+        }
+    });
+});
+</script>
+@endpush
+@endif
 
 <!-- BERITA & AGENDA -->
 <section class="py-5 bg-white" id="berita">

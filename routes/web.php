@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\SchoolProfileController;
 use App\Http\Controllers\Admin\AcademicSettingController;
 use App\Http\Controllers\Admin\HomeSliderController;
+use App\Http\Controllers\Admin\UserManagementController;
 
 Auth::routes(['register' => false]);
 
@@ -45,6 +46,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->name('admin.')->group(func
     Route::post('posts/bulk-action', [PostController::class, 'bulkAction'])->name('posts.bulk');
     Route::resource('posts', PostController::class);
     Route::post('teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
+    Route::delete('teachers/bulk-delete', [TeacherController::class, 'bulkDestroy'])->name('teachers.bulk-destroy');
     Route::resource('teachers', TeacherController::class)->except(['show']);
     Route::resource('facilities', FacilityController::class)->except(['show']);
     Route::resource('ppdb', PpdbController::class)->except(['show']);
@@ -52,4 +54,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->name('admin.')->group(func
     Route::resource('gallery-videos', GalleryVideoController::class)->except(['show']);
     Route::resource('messages', MessageController::class)->only(['index','show','destroy']);
     Route::get('logs', [ActivityLogController::class, 'index'])->name('logs.index');
+    Route::resource('users', UserManagementController::class)->except(['show']);
+    Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
 });

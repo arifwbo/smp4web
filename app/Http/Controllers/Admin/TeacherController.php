@@ -7,13 +7,48 @@ use App\Models\Teacher;
 use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $teachers = Teacher::latest()->paginate(10);
-        return view('admin.teachers.index', compact('teachers'));
+        $query = Teacher::query();
+
+        if ($search = $request->query('q')) {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nip', 'like', "%{$search}%")
+                    ->orWhere('jabatan', 'like', "%{$search}%");
+            });
+        }
+
+        $sort = $request->query('sort', 'latest');
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'name_asc':
+                $query->orderBy('nama', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('nama', 'desc');
+                break;
+            case 'jenis':
+                $query->orderBy('jenis')->orderBy('nama');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $teachers = $query->paginate(10)->withQueryString();
+
+        return view('admin.teachers.index', [
+            'teachers' => $teachers,
+            'search' => $search,
+            'sort' => $sort,
+        ]);
     }
 
     public function create()
@@ -72,6 +107,32 @@ class TeacherController extends Controller
         return redirect()->route('admin.teachers.index')->with('success', 'Guru berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:teachers,id'],
+        ]);
+
+        $teachers = Teacher::whereIn('id', $data['ids'])->get();
+        $deleted = 0;
+
+        foreach ($teachers as $teacher) {
+            if ($teacher->foto) {
+                Storage::disk('public')->delete($teacher->foto);
+            }
+
+            $teacher->delete();
+            $deleted++;
+        }
+
+        if ($deleted > 0) {
+            ActivityLogger::log('teacher.bulk_deleted', "Menghapus {$deleted} guru/tendik secara massal");
+        }
+
+        return redirect()->route('admin.teachers.index')->with('success', "{$deleted} data berhasil dihapus.");
+    }
+
     private function validatedData(Request $request): array
     {
         return $request->validate([
@@ -86,14 +147,16 @@ class TeacherController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt'],
+            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'mimes:csv,txt,xlsx'],
         ]);
 
         $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
 
-        if (! $handle) {
-            return redirect()->route('admin.teachers.index')->with('error', 'File tidak dapat dibaca.');
+        $rows = $this->extractRows($file->getRealPath(), $extension);
+
+        if ($rows->isEmpty()) {
+            return redirect()->route('admin.teachers.index')->with('error', 'File tidak dapat dibaca atau kosong.');
         }
 
         $header = null;
@@ -101,29 +164,28 @@ class TeacherController extends Controller
         $skipped = 0;
         $requiredColumns = ['nama', 'jenis'];
 
-        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+        foreach ($rows as $row) {
             if (! $header) {
                 $header = collect($row)
-                    ->map(fn ($value) => strtolower(trim($value)))
+                    ->map(fn ($value) => strtolower(trim((string) $value)))
                     ->filter()
                     ->values()
                     ->toArray();
 
                 $missing = array_diff($requiredColumns, $header);
                 if (! empty($missing)) {
-                    fclose($handle);
                     return redirect()->route('admin.teachers.index')->with('error', 'Kolom wajib (nama, jenis) tidak ditemukan pada baris header.');
                 }
                 continue;
             }
 
-            if (count(array_filter($row)) === 0) {
+            if (count(array_filter($row, fn ($value) => $value !== null && trim((string) $value) !== '')) === 0) {
                 continue;
             }
 
             $data = [];
             foreach ($header as $index => $column) {
-                $data[$column] = trim($row[$index] ?? '');
+                $data[$column] = isset($row[$index]) ? trim((string) $row[$index]) : '';
             }
 
             $payload = [
@@ -149,8 +211,6 @@ class TeacherController extends Controller
             $imported++;
         }
 
-        fclose($handle);
-
         if ($imported > 0) {
             ActivityLogger::log('teacher.imported', "Import massal guru/tendik: {$imported} baris.");
         }
@@ -163,5 +223,46 @@ class TeacherController extends Controller
         }
 
         return redirect()->route('admin.teachers.index')->with('success', $message);
+    }
+
+    private function extractRows(string $path, string $extension)
+    {
+        try {
+            if ($extension === 'xlsx') {
+                return $this->extractSpreadsheetRows($path);
+            }
+
+            return $this->extractCsvRows($path);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return collect();
+        }
+    }
+
+    private function extractCsvRows(string $path)
+    {
+        $rows = collect();
+        $handle = fopen($path, 'r');
+
+        if (! $handle) {
+            return collect();
+        }
+
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+            $rows->push($row);
+        }
+
+        fclose($handle);
+
+        return $rows;
+    }
+
+    private function extractSpreadsheetRows(string $path)
+    {
+        $spreadsheet = IOFactory::load($path);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        return collect($worksheet->toArray(null, true, true, true))
+            ->map(fn ($row) => array_values($row));
     }
 }
