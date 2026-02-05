@@ -28,14 +28,41 @@ class GalleryController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validatedData($request);
-        $data['gambar'] = $this->media->storeImage($request->file('gambar'), 'galleries');
+        $validated = $request->validate([
+            'judul' => ['required', 'string', 'max:255'],
+            'deskripsi' => ['nullable', 'string'],
+            'gambar' => ['required', 'array', 'min:1'],
+            'gambar.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ], [], [
+            'gambar' => 'file gambar',
+            'gambar.*' => 'file gambar',
+        ]);
 
-        $gallery = Gallery::create($data);
+        $files = $request->file('gambar', []);
 
-        ActivityLogger::log('gallery.created', 'Menambahkan foto galeri: ' . $gallery->judul);
+        $created = 0;
+        foreach ($files as $index => $file) {
+            $entry = [
+                'judul' => count($files) > 1
+                    ? $validated['judul'] . ' #' . ($index + 1)
+                    : $validated['judul'],
+                'deskripsi' => $validated['deskripsi'] ?? null,
+                'gambar' => $this->media->storeImage($file, 'galleries'),
+            ];
 
-        return redirect()->route('admin.galleries.index')->with('success', 'Foto galeri berhasil ditambahkan.');
+            Gallery::create($entry);
+            $created++;
+        }
+
+        if ($created > 0) {
+            ActivityLogger::log('gallery.created', "Menambahkan {$created} foto galeri.");
+        }
+
+        $message = $created > 1
+            ? "{$created} foto galeri berhasil ditambahkan."
+            : 'Foto galeri berhasil ditambahkan.';
+
+        return redirect()->route('admin.galleries.index')->with('success', $message);
     }
 
     public function edit(Gallery $gallery)

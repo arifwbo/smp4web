@@ -188,6 +188,16 @@
         'whatsappNumber' => optional($publicProfile)->whatsapp_number,
     ])
 
+    <div class="back-to-top-floating" aria-label="Kembali ke atas">
+        <div class="back-to-top-info">
+            <strong>Kembali ke Atas</strong>
+            <span>Loncat ke bagian header</span>
+        </div>
+        <button type="button" class="back-to-top-btn" id="backToTopBtn">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
     <footer class="pt-5 pb-3 mt-5 border-top border-secondary">
         <div class="container">
             <div class="row g-4">

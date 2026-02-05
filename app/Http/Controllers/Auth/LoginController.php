@@ -22,7 +22,9 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers;
+    use AuthenticatesUsers {
+        sendFailedLoginResponse as traitFailedLoginResponse;
+    }
 
     /**
      * Where to redirect users after login.
@@ -77,7 +79,7 @@ class LoginController extends Controller
             ]);
         }
 
-        return parent::sendFailedLoginResponse($request);
+        return $this->traitFailedLoginResponse($request);
     }
 
     protected function maxAttempts(): int
