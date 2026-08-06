@@ -2,19 +2,23 @@
 cd /d C:\laragon\www\smpn4-samarinda
 
 echo ================================
-echo  GIT COMMIT & PUSH
+echo  GIT PULL + COMMIT + PUSH
 echo ================================
 echo.
 
-echo [1] Menambahkan semua perubahan...
+echo [1] Pull perubahan dari remote dulu...
+git pull origin main --no-rebase
+
+echo.
+echo [2] Menambahkan semua perubahan lokal...
 git add -A
 
 echo.
-echo [2] File yang akan di-commit:
+echo [3] File yang akan di-commit:
 git status --short
 
 echo.
-echo [3] Melakukan commit...
+echo [4] Melakukan commit...
 git commit -m "feat: redesign UI - navbar, login, mobile menu, FAB group, JS cleanup
 
 Perubahan yang dilakukan:
@@ -30,8 +34,8 @@ Perubahan yang dilakukan:
 - Update komponen whatsapp-button.blade.php"
 
 echo.
-echo [4] Push ke remote...
-git push
+echo [5] Push ke remote...
+git push origin main
 
 echo.
 echo ================================
