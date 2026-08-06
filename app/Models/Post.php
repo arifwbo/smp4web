@@ -2,10 +2,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Post extends Model
 {
+    use SoftDeletes;
+
     protected $guarded = [];
 
     protected static function boot()
@@ -35,8 +38,16 @@ class Post extends Model
 
     public function getGambarUrlAttribute(): string
     {
-        return $this->gambar
-            ? asset('storage/' . $this->gambar)
-            : 'https://via.placeholder.com/600x400?text=No+Image';
+        if ($this->gambar) {
+            $cleanPath = ltrim(preg_replace('/^(storage\/|media\/)+/', '', $this->gambar), '/');
+            return url('media/' . $cleanPath);
+        }
+
+        return asset('img/placeholder.jpg');
+    }
+
+    public function getLampiranUrlAttribute(): ?string
+    {
+        return $this->lampiran_path ? asset('storage/' . $this->lampiran_path) : null;
     }
 }

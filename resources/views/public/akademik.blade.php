@@ -54,10 +54,10 @@
     ];
 @endphp
 
-<section class="py-5 position-relative" style="background: radial-gradient(circle at top, #0d3b66, #031726);">
-    <div class="container py-4">
-        <div class="row align-items-center text-white">
-            <div class="col-lg-7">
+<section id="akademik-hero" class="py-5 position-relative" style="background: linear-gradient(135deg, #0a58ca, #0d6efd);">
+    <div class="container py-4 position-relative glow-accent">
+        <div class="row align-items-center text-white g-4">
+            <div class="col-lg-7 reveal-segment">
                 <p class="text-uppercase fw-semibold text-warning mb-2">{{ $heroSubtitle }}</p>
                 <h1 class="display-5 fw-bold mb-3">{{ $heroTitle }}</h1>
                 <p class="lead text-white-50 mb-4">{{ $heroDescription }}</p>
@@ -66,7 +66,7 @@
                     <a href="{{ $ctaPpdbLink }}" class="btn btn-outline-light fw-bold px-4 rounded-pill">{{ $ctaPpdbLabel }}</a>
                 </div>
             </div>
-            <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="col-lg-5 mt-4 mt-lg-0 reveal-segment" data-reveal="right">
                 <div class="bg-white bg-opacity-10 rounded-4 p-4 border border-white border-opacity-25">
                     <h5 class="text-uppercase text-warning">Highlight</h5>
                     <ul class="list-unstyled mb-0 text-white-50">
@@ -82,17 +82,17 @@
 
 <section class="py-5 bg-light" id="kurikulum">
     <div class="container">
-        <div class="text-center mb-5">
+        <div class="text-center mb-5 reveal-segment">
             <h2 class="fw-bold text-primary-custom">Fondasi Kurikulum</h2>
             <p class="text-muted">Pendekatan pembelajaran yang menumbuhkan karakter, kompetensi, dan budaya kolaboratif.</p>
         </div>
         <div class="row g-4">
             @foreach($curriculumHighlight as $item)
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm reveal-segment" data-reveal="{{ $loop->odd ? 'left' : 'right' }}">
                         <div class="card-body p-4">
-                            <div class="rounded-circle bg-primary-custom bg-opacity-10 text-primary-custom d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
-                                <i class="fa-solid {{ $item['icon'] }} fa-lg"></i>
+                            <div class="icon-circle-soft mb-3">
+                                <i class="fa-solid {{ $item['icon'] ?? 'fa-star' }} fa-lg"></i>
                             </div>
                             <h5 class="fw-bold">{{ $item['title'] }}</h5>
                             <p class="text-muted small">{{ $item['desc'] }}</p>
@@ -112,7 +112,7 @@
 <section class="py-5" id="muatan-lokal">
     <div class="container">
         <div class="row align-items-start g-4">
-            <div class="col-lg-6">
+            <div class="col-lg-6 reveal-segment" data-reveal="left">
                 <h3 class="fw-bold text-primary-custom mb-3">Struktur Jam & Muatan Lokal</h3>
                 <p class="text-muted">Distribusi jam pelajaran mengikuti ketentuan Kemendikbudristek serta muatan lokal khas sekolah.</p>
                 <div class="table-responsive rounded-4 shadow-sm">
@@ -138,7 +138,7 @@
                     </table>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 reveal-segment" data-reveal="right">
                 <div class="p-4 rounded-4 bg-primary-custom text-white h-100">
                     <h4 class="fw-bold mb-3">Pendampingan Akademik</h4>
                     <p class="text-white-50">Selain pembelajaran di kelas, siswa mendapatkan program penguatan berikut:</p>
@@ -156,20 +156,20 @@
 
 <section class="py-5 bg-light" id="program-unggulan">
     <div class="container">
-        <div class="text-center mb-5">
+        <div class="text-center mb-5 reveal-segment">
             <h2 class="fw-bold">Program Unggulan</h2>
             <p class="text-muted">Rangkaian program yang dirancang untuk memaksimalkan potensi akademik dan karakter.</p>
         </div>
         <div class="row g-4">
             @foreach($programUnggulan as $program)
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 border-0 shadow-sm reveal-segment" data-reveal="{{ $loop->odd ? 'left' : 'right' }}">
                         <div class="card-body p-4">
                             <h5 class="fw-bold">{{ $program['title'] ?? '' }}</h5>
                             <p class="text-muted small">{{ $program['desc'] ?? '' }}</p>
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach(($program['tags'] ?? []) as $tag)
-                                    <span class="badge rounded-pill text-bg-warning text-dark">{{ $tag }}</span>
+                                    <span class="badge badge-pill-wrap rounded-pill text-bg-warning text-dark">{{ $tag }}</span>
                                 @endforeach
                             </div>
                         </div>
@@ -183,12 +183,12 @@
 <section class="py-5">
     <div class="container">
         <div class="row g-4">
-            <div class="col-lg-6">
+            <div class="col-lg-6 reveal-segment" data-reveal="left">
                 <h3 class="fw-bold text-primary-custom mb-4">Ekstrakurikuler Akademik</h3>
                 <div class="row g-3">
                     @foreach($ekstrakurikuler as $eks)
                         <div class="col-sm-6">
-                            <div class="border rounded-4 p-3 h-100">
+                            <div class="border rounded-4 p-3 h-100 reveal-segment">
                                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light mb-2" style="width:48px;height:48px;">
                                     <i class="fa-solid {{ $eks['icon'] ?? 'fa-star' }} text-primary-custom"></i>
                                 </div>
@@ -199,11 +199,11 @@
                     @endforeach
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 reveal-segment" data-reveal="right">
                 <h3 class="fw-bold text-primary-custom mb-4">Kalender Akademik</h3>
                 <div class="timeline">
                     @foreach($kalenderAkademik as $item)
-                        <div class="timeline-item mb-4 d-flex">
+                        <div class="timeline-item mb-4 d-flex reveal-segment">
                             <div class="me-3 text-center">
                                 <span class="badge bg-primary-custom">{{ $item['periode'] ?? '' }}</span>
                             </div>

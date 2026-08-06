@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Gallery extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'judul',
         'deskripsi',
@@ -14,6 +16,11 @@ class Gallery extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return asset('storage/' . $this->gambar);
+        if ($this->gambar) {
+            $cleanPath = ltrim(preg_replace('/^(storage\/|media\/)+/', '', $this->gambar), '/');
+            return url('media/' . $cleanPath);
+        }
+
+        return asset('img/placeholder.jpg');
     }
 }

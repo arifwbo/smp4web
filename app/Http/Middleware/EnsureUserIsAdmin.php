@@ -10,7 +10,9 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()?->isAdmin()) {
+        $user = $request->user();
+
+        if (! $user || ! $user->hasPanelAccess()) {
             abort(Response::HTTP_FORBIDDEN, 'Akses admin diperlukan.');
         }
 

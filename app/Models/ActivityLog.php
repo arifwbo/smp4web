@@ -13,6 +13,13 @@ class ActivityLog extends Model
         'description',
         'ip_address',
         'user_agent',
+        'properties_before',
+        'properties_after',
+    ];
+
+    protected $casts = [
+        'properties_before' => 'array',
+        'properties_after' => 'array',
     ];
 
     public function user(): BelongsTo

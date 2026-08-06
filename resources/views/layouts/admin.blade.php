@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
+    <meta name="description" content="Panel administrasi resmi SMP Negeri 4 Samarinda">
+    <meta name="theme-color" content="#012a63">
     @php
-        $fullProfile = cache()->remember('school_profile_full', 60, function () {
-            return \App\Models\SchoolProfile::select('nama_sekolah', 'logo_path')->first();
+        $currentUser = auth()->user();
+
+        $fullProfile = cache()->remember('layout_admin_profile', 300, function () {
+            return \App\Models\SchoolProfile::select([
+                'nama_sekolah',
+                'logo_path',
+            ])->first();
         });
 
         $logoPath = optional($fullProfile)->logo_path;
-        $uploadedLogoUrl = $logoPath ? asset('storage/' . $logoPath) : asset('img/logo-smp4.jpg');
+        $uploadedLogoUrl = $logoPath
+            ? asset('storage/' . ltrim($logoPath, '/'))
+            : asset('img/logo-smp4.jpg');
 
-        $cachedFaviconPath = cache()->get('school_profile_favicon');
-        if (! $cachedFaviconPath && \Illuminate\Support\Facades\Storage::disk('public')->exists('branding/favicon.ico')) {
-            $cachedFaviconPath = 'branding/favicon.ico';
-        }
+        $cachedFaviconPath = cache()->remember('school_profile_favicon', 60, function () {
+            return \Illuminate\Support\Facades\Storage::disk('public')->exists('branding/favicon.ico')
+                ? 'branding/favicon.ico'
+                : null;
+        });
 
         $adminFaviconUrl = $cachedFaviconPath
             ? asset('storage/' . $cachedFaviconPath)
@@ -26,6 +34,24 @@
         $shortBrandName = $adminBrandName
             ? trim(collect(explode(' ', $adminBrandName))->take(3)->join(' '))
             : 'SMP Negeri 4';
+
+        $menuItems = [
+            ['label' => 'Dashboard', 'icon' => 'fas fa-gauge', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'permission' => 'dashboard.view'],
+            ['label' => 'Profil Sekolah', 'icon' => 'fas fa-school', 'route' => 'admin.profile.edit', 'pattern' => 'admin.profile.*', 'permission' => 'profile.update'],
+            ['label' => 'Kepala Sekolah', 'icon' => 'fas fa-user-tie', 'route' => 'admin.former-principals.index', 'pattern' => 'admin.former-principals.*', 'permission' => 'profile.update'],
+            ['label' => 'Slider Beranda', 'icon' => 'fas fa-images', 'route' => 'admin.home-sliders.index', 'pattern' => 'admin.home-sliders.*', 'permission' => 'sliders.manage'],
+            ['label' => 'Berita', 'icon' => 'fas fa-newspaper', 'route' => 'admin.posts.index', 'pattern' => 'admin.posts.*', 'permission' => ['posts.manage', 'posts.academic', 'posts.sarpras']],
+            ['label' => 'GTK', 'icon' => 'fas fa-user-graduate', 'route' => 'admin.teachers.index', 'pattern' => 'admin.teachers.*', 'permission' => 'teachers.manage'],
+            ['label' => 'Fasilitas', 'icon' => 'fas fa-building', 'route' => 'admin.facilities.index', 'pattern' => 'admin.facilities.*', 'permission' => 'facilities.manage'],
+            ['label' => 'Portal Aplikasi', 'icon' => 'fas fa-sitemap', 'route' => 'admin.application-links.index', 'pattern' => 'admin.application-links.*', 'permission' => 'application-links.manage'],
+            ['label' => 'Halaman Akademik', 'icon' => 'fas fa-graduation-cap', 'route' => 'admin.academic.edit', 'pattern' => 'admin.academic.*', 'permission' => 'academic.manage'],
+            ['label' => 'PPDB', 'icon' => 'fas fa-address-card', 'route' => 'admin.ppdb.index', 'pattern' => 'admin.ppdb.*', 'permission' => 'ppdb.manage'],
+            ['label' => 'Galeri', 'icon' => 'fas fa-images', 'route' => 'admin.galleries.index', 'pattern' => 'admin.galleries.*', 'permission' => 'galleries.manage'],
+            ['label' => 'Galeri Video', 'icon' => 'fas fa-video', 'route' => 'admin.gallery-videos.index', 'pattern' => 'admin.gallery-videos.*', 'permission' => 'gallery-videos.manage'],
+            ['label' => 'Pesan', 'icon' => 'fas fa-inbox', 'route' => 'admin.messages.index', 'pattern' => 'admin.messages.*', 'permission' => 'messages.view'],
+            ['label' => 'Pengguna', 'icon' => 'fas fa-users-cog', 'route' => 'admin.users.index', 'pattern' => 'admin.users.*', 'permission' => 'users.manage'],
+            ['label' => 'Log Aktivitas', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.logs.index', 'pattern' => 'admin.logs.index', 'permission' => 'activity.logs.view'],
+        ];
     @endphp
 
     <link rel="icon" href="{{ $adminFaviconUrl }}" type="image/x-icon">
@@ -37,255 +63,441 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars/css/OverlayScrollbars.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* ============================================
+           ADMIN DESIGN SYSTEM — PROFESSIONAL THEME
+           ============================================ */
         :root {
-            --admin-brand: #012a63;
-            --admin-brand-dark: #00163a;
-            --admin-accent: #fbbf24;
-            --admin-accent-dark: #f59e0b;
+            --adm-sidebar-bg:    #0f172a;
+            --adm-sidebar-hover: #1e293b;
+            --adm-sidebar-text:  rgba(148, 163, 184, 1);
+            --adm-sidebar-head:  rgba(71, 85, 105, 0.8);
+            --adm-accent:        #2563eb;
+            --adm-accent-light:  #eff6ff;
+            --adm-accent-dark:   #1d4ed8;
+            --adm-warning:       #f59e0b;
+            --adm-success:       #10b981;
+            --adm-danger:        #ef4444;
+            --adm-info:          #06b6d4;
+            --adm-bg:            #f1f5f9;
+            --adm-surface:       #ffffff;
+            --adm-border:        #e2e8f0;
+            --adm-text:          #0f172a;
+            --adm-muted:         #64748b;
+            --adm-radius:        12px;
+            --adm-radius-sm:     8px;
+            --adm-shadow:        0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+            --adm-shadow-md:     0 4px 16px rgba(0,0,0,.08);
+            --adm-shadow-lg:     0 10px 30px rgba(0,0,0,.10);
         }
 
+        /* Base */
+        body, html { font-family: 'Inter', system-ui, sans-serif !important; }
+        body { background: var(--adm-bg) !important; color: var(--adm-text) !important; }
+
+        /* ── TOPBAR ── */
         .main-header {
-            background: linear-gradient(90deg, var(--admin-brand), var(--admin-brand-dark));
-            border-bottom: none;
+            background: var(--adm-surface) !important;
+            border-bottom: 1px solid var(--adm-border) !important;
+            box-shadow: var(--adm-shadow) !important;
+            height: 64px;
         }
-
         .main-header .nav-link,
         .main-header .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--adm-muted) !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem !important;
+            border-radius: var(--adm-radius-sm);
+            transition: all 0.2s;
         }
-
         .main-header .nav-link:hover,
-        .main-header .navbar-nav .nav-link:focus {
-            color: #fff;
+        .main-header .navbar-nav .nav-link:hover {
+            color: var(--adm-accent) !important;
+            background: var(--adm-accent-light) !important;
         }
+        .main-header .navbar-nav .nav-link i { font-size: 0.9rem; }
+        /* Topbar pushmenu icon */
+        .main-header [data-widget="pushmenu"] { color: var(--adm-muted) !important; }
 
+        /* Topbar user dropdown */
+        .main-header .user-image { border: 2px solid var(--adm-accent) !important; border-radius: 10px !important; }
+        .main-header .user-menu > .nav-link span { color: var(--adm-text) !important; font-weight: 500; font-size: 0.875rem; }
+
+        /* ── SIDEBAR ── */
         .main-sidebar {
-            background: linear-gradient(180deg, var(--admin-brand-dark), var(--admin-brand));
+            background: var(--adm-sidebar-bg) !important;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.25) !important;
         }
 
         .brand-link {
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 0.75rem;
-            min-height: 70px;
+            background: #080f1e !important;
+            border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+            padding: 0 1.25rem !important;
+            min-height: 64px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
         }
-
-        .brand-link .brand-text {
-            letter-spacing: 0.08em;
-        }
-
         .brand-link .brand-image {
-            width: 44px;
-            height: 44px;
-            object-fit: contain;
-            background: #fff;
-            padding: 0.25rem;
+            width: 38px !important;
+            height: 38px !important;
+            object-fit: contain !important;
+            background: #fff !important;
+            border-radius: 10px !important;
+            padding: 4px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            margin: 0 !important;
+        }
+        .brand-link .brand-text {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+            color: #fff !important;
+            letter-spacing: -0.01em !important;
         }
 
-        .nav-sidebar .nav-link {
-            border-radius: 0.65rem;
-            margin: 0 0.35rem 0.35rem;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 500;
-            padding: 0.65rem 0.85rem;
-            position: relative;
-        }
+        /* Sidebar scrollable area */
+        .sidebar { padding: 0 0.75rem 2rem !important; background: transparent !important; }
 
-        .nav-sidebar .nav-link.active {
-            background: linear-gradient(90deg, var(--admin-accent), var(--admin-accent-dark));
-            color: #1f2937;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-        }
-
-        .nav-sidebar .nav-link.active .nav-icon {
-            color: var(--admin-brand);
-        }
-
-        .nav-sidebar .nav-link .nav-icon {
-            color: rgba(255, 255, 255, 0.8);
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.08);
-            font-size: 0.95rem;
-        }
-
-        .nav-sidebar .nav-item + .nav-item {
-            margin-top: 0.2rem;
-        }
-
-        .nav-sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-sidebar .nav-link.active::before {
-            content: '';
-            width: 6px;
-            height: 24px;
-            border-radius: 999px;
-            background: var(--admin-accent-dark);
-            position: absolute;
-            left: -10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .nav-sidebar .nav-link.active .nav-icon,
-        .nav-sidebar .nav-link:hover .nav-icon {
-            background: rgba(255, 255, 255, 0.92);
-        }
-
-        .nav-header-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin: 1.25rem 1rem 0.5rem;
-            color: rgba(255, 255, 255, 0.45);
-        }
-
-        .sidebar {
-            padding: 0 1rem 2rem;
-        }
-
-        .sidebar-inner {
-            display: flex;
-            flex-direction: column;
-            min-height: calc(100vh - 70px);
-        }
-
+        /* User card */
         .sidebar-user-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
+            margin: 1rem 0 !important;
+            padding: 0.85rem 1rem !important;
+            background: rgba(255,255,255,0.04) !important;
+            border-radius: var(--adm-radius) !important;
+            border: 1px solid rgba(255,255,255,0.06) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
         }
-
         .sidebar-user-card .image img {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+            width: 42px !important; height: 42px !important;
+            border-radius: 12px !important;
+            border: 2px solid rgba(37,99,235,0.5) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
         }
-
         .sidebar-user-card .info a {
-            font-weight: 600;
+            color: #f1f5f9 !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+        }
+        .sidebar-user-card .info span {
+            color: var(--adm-sidebar-text) !important;
+            font-size: 0.75rem !important;
         }
 
+        /* Nav items container */
         .sidebar-menu-card {
-            margin-top: 1.5rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 1.25rem 0.75rem 1.5rem;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
-        .sidebar-menu-card .nav {
-            flex: 1;
+        /* Nav section header */
+        .nav-header-label {
+            font-size: 0.65rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+            color: var(--adm-sidebar-head) !important;
+            padding: 1.25rem 0.75rem 0.5rem !important;
+            margin: 0 !important;
+            display: block !important;
         }
 
-        .sidebar-mini.sidebar-collapse .brand-link {
-            justify-content: center;
+        /* Nav links */
+        .nav-sidebar .nav-item { margin: 0 0 2px !important; }
+        .nav-sidebar .nav-link {
+            border-radius: var(--adm-radius-sm) !important;
+            padding: 0.6rem 0.85rem !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            color: var(--adm-sidebar-text) !important;
+            transition: all 0.18s ease !important;
+            position: relative !important;
+            white-space: nowrap !important;
+        }
+        .nav-sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.07) !important;
+            color: #f1f5f9 !important;
+        }
+        .nav-sidebar .nav-link .nav-icon {
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: var(--adm-radius-sm) !important;
+            background: rgba(255,255,255,0.07) !important;
+            color: var(--adm-sidebar-text) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.85rem !important;
+            flex-shrink: 0 !important;
+            transition: all 0.18s ease !important;
+        }
+        .nav-sidebar .nav-link:hover .nav-icon {
+            background: rgba(37,99,235,0.2) !important;
+            color: #93c5fd !important;
+        }
+        .nav-sidebar .nav-link.active {
+            background: var(--adm-accent) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
+        }
+        .nav-sidebar .nav-link.active .nav-icon {
+            background: rgba(255,255,255,0.2) !important;
+            color: #ffffff !important;
+        }
+        .nav-sidebar .nav-link p {
+            margin: 0 !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            flex: 1 !important;
         }
 
+        /* Sidebar collapse tweaks */
+        .sidebar-inner {
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: calc(100vh - 64px) !important;
+        }
+        .sidebar-mini.sidebar-collapse .brand-link { justify-content: center !important; }
         .sidebar-mini.sidebar-collapse.sidebar-open .brand-link,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link {
-            justify-content: flex-start;
-        }
-
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link { justify-content: flex-start !important; }
         .sidebar-mini.sidebar-collapse .brand-link .brand-text,
         .sidebar-mini.sidebar-collapse .nav-header-label,
-        .sidebar-mini.sidebar-collapse .sidebar-user-card {
-            display: none !important;
-        }
-
+        .sidebar-mini.sidebar-collapse .sidebar-user-card { display: none !important; }
         .sidebar-mini.sidebar-collapse.sidebar-open .brand-link .brand-text,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link .brand-text {
-            display: inline-block !important;
-        }
-
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .brand-link .brand-text { display: inline-block !important; }
         .sidebar-mini.sidebar-collapse.sidebar-open .nav-header-label,
         .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-header-label,
         .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-user-card,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-user-card {
-            display: block !important;
-        }
-
-        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-user-card,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-user-card {
-            display: flex !important;
-        }
-
-        .sidebar-mini.sidebar-collapse .sidebar {
-            padding: 0.75rem 0.45rem 1rem;
-        }
-
-        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar {
-            padding: 0 1rem 2rem;
-        }
-
-        .sidebar-mini.sidebar-collapse .sidebar-menu-card {
-            padding: 0.5rem 0.3rem 1rem;
-            border-radius: 1rem;
-        }
-
-        .sidebar-mini.sidebar-collapse.sidebar-open .sidebar-menu-card,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-menu-card {
-            padding: 1.25rem 0.75rem 1.5rem;
-        }
-
-        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link {
-            justify-content: center;
-            margin: 0.25rem 0.15rem;
-            padding: 0.65rem 0.25rem;
-        }
-
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .sidebar-user-card { display: flex !important; }
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link { justify-content: center !important; padding: 0.65rem 0.3rem !important; }
         .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link {
-            justify-content: flex-start;
-            margin: 0 0.35rem 0.35rem;
-            padding: 0.65rem 0.85rem;
-        }
-
-        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link p,
-        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link::before {
-            display: none !important;
-        }
-
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link { justify-content: flex-start !important; padding: 0.6rem 0.85rem !important; }
+        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link p { display: none !important; }
         .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link p,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link::before,
-        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link p,
-        .sidebar-mini.sidebar-collapse.sidebar-open .nav-sidebar .nav-link::before {
-            display: block !important;
+        .sidebar-mini.sidebar-collapse.sidebar-is-opening .nav-sidebar .nav-link p { display: block !important; }
+
+        /* ── CONTENT WRAPPER ── */
+        .content-wrapper {
+            background: var(--adm-bg) !important;
+            min-height: calc(100vh - 64px) !important;
         }
 
-        .sidebar-mini.sidebar-collapse .nav-sidebar .nav-link .nav-icon {
-            margin: 0;
+        /* Page header */
+        .content-header {
+            padding: 1.5rem 1.5rem 0 !important;
+            background: transparent !important;
+        }
+        .content-header h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-size: 1.4rem !important;
+            font-weight: 700 !important;
+            color: var(--adm-text) !important;
+            margin: 0 !important;
+        }
+        .content-header .breadcrumb {
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-size: 0.8rem !important;
+        }
+        .content-header .breadcrumb-item a { color: var(--adm-accent) !important; text-decoration: none !important; }
+        .content-header .breadcrumb-item.active { color: var(--adm-muted) !important; }
+
+        /* Content section */
+        .content { padding: 1.25rem 1.5rem 2rem !important; }
+
+        /* ── CARDS ── */
+        .card {
+            border: 1px solid var(--adm-border) !important;
+            border-radius: var(--adm-radius) !important;
+            box-shadow: var(--adm-shadow) !important;
+            background: var(--adm-surface) !important;
+            transition: box-shadow 0.2s ease !important;
+        }
+        .card:hover { box-shadow: var(--adm-shadow-md) !important; }
+        .card-header {
+            background: var(--adm-surface) !important;
+            border-bottom: 1px solid var(--adm-border) !important;
+            padding: 1rem 1.25rem !important;
+            border-radius: var(--adm-radius) var(--adm-radius) 0 0 !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            color: var(--adm-text) !important;
+        }
+        .card-body { padding: 1.25rem !important; }
+        .card-footer {
+            background: #f8fafc !important;
+            border-top: 1px solid var(--adm-border) !important;
+            border-radius: 0 0 var(--adm-radius) var(--adm-radius) !important;
+            padding: 0.85rem 1.25rem !important;
         }
 
-        .main-header .badge-notif {
-            background: var(--admin-accent);
-            color: #1f2937;
-            font-weight: 600;
+        /* ── TABLES ── */
+        .table { font-size: 0.875rem !important; }
+        .table thead th {
+            background: #f8fafc !important;
+            border-bottom: 2px solid var(--adm-border) !important;
+            color: var(--adm-muted) !important;
+            font-weight: 600 !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding: 0.85rem 1rem !important;
+        }
+        .table td {
+            vertical-align: middle !important;
+            padding: 0.85rem 1rem !important;
+            border-color: var(--adm-border) !important;
+            color: var(--adm-text) !important;
+        }
+        .table tbody tr:hover { background: #f8fafc !important; }
+        .table-responsive { border-radius: var(--adm-radius) !important; }
+
+        /* ── FORMS ── */
+        .form-control, .form-select {
+            border: 1px solid var(--adm-border) !important;
+            border-radius: var(--adm-radius-sm) !important;
+            font-size: 0.875rem !important;
+            color: var(--adm-text) !important;
+            background: var(--adm-surface) !important;
+            padding: 0.55rem 0.85rem !important;
+            transition: border-color 0.2s, box-shadow 0.2s !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--adm-accent) !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
+            outline: none !important;
+        }
+        .form-label {
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            color: var(--adm-muted) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.04em !important;
+            margin-bottom: 0.4rem !important;
+        }
+        .input-group-text {
+            border: 1px solid var(--adm-border) !important;
+            background: #f8fafc !important;
+            color: var(--adm-muted) !important;
+            border-radius: var(--adm-radius-sm) !important;
         }
 
-        /* Gunakan gaya collapse bawaan AdminLTE */
+        /* ── BUTTONS ── */
+        .btn {
+            border-radius: var(--adm-radius-sm) !important;
+            font-weight: 500 !important;
+            font-size: 0.875rem !important;
+            padding: 0.5rem 1.1rem !important;
+            transition: all 0.2s !important;
+        }
+        .btn-primary, .btn-primary-custom {
+            background: var(--adm-accent) !important;
+            border-color: var(--adm-accent) !important;
+            color: #fff !important;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.25) !important;
+        }
+        .btn-primary:hover, .btn-primary-custom:hover {
+            background: var(--adm-accent-dark) !important;
+            border-color: var(--adm-accent-dark) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.35) !important;
+        }
+        .btn-danger { background: var(--adm-danger) !important; border-color: var(--adm-danger) !important; color: #fff !important; }
+        .btn-success { background: var(--adm-success) !important; border-color: var(--adm-success) !important; color: #fff !important; }
+        .btn-warning { background: var(--adm-warning) !important; border-color: var(--adm-warning) !important; color: #fff !important; }
+        .btn-outline-primary { border-color: var(--adm-accent) !important; color: var(--adm-accent) !important; }
+        .btn-outline-primary:hover { background: var(--adm-accent) !important; color: #fff !important; }
+        .btn-sm { padding: 0.35rem 0.75rem !important; font-size: 0.8rem !important; }
+
+        /* ── BADGES ── */
+        .badge {
+            font-size: 0.72rem !important;
+            font-weight: 600 !important;
+            padding: 0.3em 0.65em !important;
+            border-radius: 6px !important;
+        }
+        .badge.bg-primary, .badge-primary { background: var(--adm-accent) !important; }
+        .badge.bg-success, .badge-success { background: var(--adm-success) !important; }
+        .badge.bg-danger, .badge-danger { background: var(--adm-danger) !important; }
+        .badge.bg-warning, .badge-warning { background: var(--adm-warning) !important; color: #fff !important; }
+        .badge.bg-info, .badge-info { background: var(--adm-info) !important; }
+        .badge-light { background: var(--adm-border) !important; color: var(--adm-text) !important; }
+
+        /* ── ALERTS ── */
+        .alert { border-radius: var(--adm-radius) !important; border: none !important; font-size: 0.875rem !important; }
+        .alert-success { background: #d1fae5 !important; color: #065f46 !important; }
+        .alert-danger { background: #fee2e2 !important; color: #991b1b !important; }
+        .alert-warning { background: #fef3c7 !important; color: #92400e !important; }
+        .alert-info { background: #cffafe !important; color: #155e75 !important; }
+
+        /* ── FOOTER ── */
+        .main-footer {
+            background: var(--adm-surface) !important;
+            border-top: 1px solid var(--adm-border) !important;
+            color: var(--adm-muted) !important;
+            font-size: 0.8rem !important;
+            padding: 0.85rem 1.5rem !important;
+        }
+
+        /* ── PAGINATION ── */
+        .pagination .page-link {
+            border-radius: var(--adm-radius-sm) !important;
+            margin: 0 2px !important;
+            color: var(--adm-accent) !important;
+            border-color: var(--adm-border) !important;
+            font-size: 0.8rem !important;
+        }
+        .pagination .page-item.active .page-link {
+            background: var(--adm-accent) !important;
+            border-color: var(--adm-accent) !important;
+            color: #fff !important;
+        }
+
+        /* ── DROPDOWN ── */
+        .dropdown-menu {
+            border: 1px solid var(--adm-border) !important;
+            border-radius: var(--adm-radius) !important;
+            box-shadow: var(--adm-shadow-lg) !important;
+            font-size: 0.875rem !important;
+        }
+        .dropdown-item { padding: 0.55rem 1.1rem !important; color: var(--adm-text) !important; font-size: 0.875rem !important; }
+        .dropdown-item:hover { background: var(--adm-accent-light) !important; color: var(--adm-accent) !important; }
+
+        /* ── TOPBAR BADGE ── */
+        .badge-notif {
+            background: var(--adm-accent) !important;
+            color: #fff !important;
+            font-size: 0.65rem !important;
+            border-radius: 6px !important;
+        }
+
+        /* ── LIST GROUP ── */
+        .list-group-item { border-color: var(--adm-border) !important; font-size: 0.875rem !important; }
+        .list-group-item.active { background: var(--adm-accent) !important; border-color: var(--adm-accent) !important; }
+
+        /* ── MISC ── */
+        .text-primary { color: var(--adm-accent) !important; }
+        .bg-primary { background: var(--adm-accent) !important; }
+        hr { border-color: var(--adm-border) !important; opacity: 1 !important; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 
     @stack('styles')
@@ -364,29 +576,17 @@
                     </div>
                 </div>
 
-                @php
-                $menuItems = [
-                    ['label' => 'Dashboard', 'icon' => 'fas fa-gauge', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard'],
-                    ['label' => 'Profil Sekolah', 'icon' => 'fas fa-school', 'route' => 'admin.profile.edit', 'pattern' => 'admin.profile.*'],
-                    ['label' => 'Kepala Sekolah', 'icon' => 'fas fa-user-tie', 'route' => 'admin.former-principals.index', 'pattern' => 'admin.former-principals.*'],
-                    ['label' => 'Slider Beranda', 'icon' => 'fas fa-images', 'route' => 'admin.home-sliders.index', 'pattern' => 'admin.home-sliders.*'],
-                    ['label' => 'Berita', 'icon' => 'fas fa-newspaper', 'route' => 'admin.posts.index', 'pattern' => 'admin.posts.*'],
-                    ['label' => 'GTK', 'icon' => 'fas fa-user-graduate', 'route' => 'admin.teachers.index', 'pattern' => 'admin.teachers.*'],
-                    ['label' => 'Fasilitas', 'icon' => 'fas fa-building', 'route' => 'admin.facilities.index', 'pattern' => 'admin.facilities.*'],
-                    ['label' => 'Halaman Akademik', 'icon' => 'fas fa-graduation-cap', 'route' => 'admin.academic.edit', 'pattern' => 'admin.academic.*'],
-                    ['label' => 'PPDB', 'icon' => 'fas fa-address-card', 'route' => 'admin.ppdb.index', 'pattern' => 'admin.ppdb.*'],
-                    ['label' => 'Galeri', 'icon' => 'fas fa-images', 'route' => 'admin.galleries.index', 'pattern' => 'admin.galleries.*'],
-                    ['label' => 'Galeri Video', 'icon' => 'fas fa-video', 'route' => 'admin.gallery-videos.index', 'pattern' => 'admin.gallery-videos.*'],
-                    ['label' => 'Pesan', 'icon' => 'fas fa-inbox', 'route' => 'admin.messages.index', 'pattern' => 'admin.messages.*'],
-                    ['label' => 'Pengguna', 'icon' => 'fas fa-users-cog', 'route' => 'admin.users.index', 'pattern' => 'admin.users.*'],
-                    ['label' => 'Log Aktivitas', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.logs.index', 'pattern' => 'admin.logs.index'],
-                ];
-                @endphp
-
                 <nav class="sidebar-menu-card">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li class="nav-header-label">Menu Utama</li>
                         @foreach($menuItems as $item)
+                            @php
+                                $permissions = (array) ($item['permission'] ?? []);
+                                $visible = empty($permissions) || ($currentUser && collect($permissions)->contains(fn ($perm) => $currentUser->hasPermission($perm)));
+                            @endphp
+                            @if(! $visible)
+                                @continue
+                            @endif
                             @php $active = request()->routeIs($item['pattern']); @endphp
                             <li class="nav-item">
                                 <a href="{{ route($item['route']) }}" class="nav-link {{ $active ? 'active' : '' }}">

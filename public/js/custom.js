@@ -1,53 +1,89 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Pastikan halaman selalu kembali ke atas setelah dimuat ulang
+    // 1. Scroll Restoration (prevent browser from remembering scroll position on reload)
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    // 1. Animasi muncul saat halaman discroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
+    // Only scroll to top on initial page load if no hash is present, 
+    // to allow anchor links (like /profil#sejarah) to work correctly
+    if (!window.location.hash) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    // 2. Initialize AOS Animation Library
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 700,
+            once: true,
+            offset: 80,
+            easing: 'ease-out-cubic'
         });
-    }, { threshold: 0.1 });
+    }
 
-    document.querySelectorAll('.fade-in-up').forEach(el => {
-        observer.observe(el);
-    });
+    // 3. Global Scroll Handler (Navbar, Progress Bar, Back to Top)
+    const navbar = document.getElementById('mainNavbar');
+    const progress = document.getElementById('scroll-progress');
+    const backToTop = document.getElementById('back-to-top'); // the .fab-top button
 
-    // 2. Navigasi tab (Profil Sekolah)
-    var tabLinks = [].slice.call(document.querySelectorAll('.list-group-item-action'));
-    tabLinks.forEach(function(link) {
-        if (link.getAttribute('data-bs-toggle') === 'list') {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                var tab = new bootstrap.Tab(link);
-                tab.show();
-            });
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+        // Scroll progress bar
+        if (progress && docHeight > 0) {
+            progress.style.width = ((scrollTop / docHeight) * 100) + '%';
         }
-    });
 
-    // 3. Tombol kembali ke atas
-    var backToTopBtn = document.getElementById('backToTopBtn');
-    var backToTopFloating = document.querySelector('.back-to-top-floating');
+        // Navbar shrink
+        if (navbar) {
+            navbar.classList.toggle('scrolled', scrollTop > 50);
+        }
 
-    if (backToTopBtn && backToTopFloating) {
-        var toggleBackToTop = function() {
-            if (window.scrollY > 320) {
-                backToTopFloating.classList.add('is-visible');
-            } else {
-                backToTopFloating.classList.remove('is-visible');
-            }
-        };
+        // Back to top visibility (uses .fab-top + .visible)
+        if (backToTop) {
+            backToTop.classList.toggle('visible', scrollTop > 300);
+        }
+    }, { passive: true });
 
-        toggleBackToTop();
-
-        window.addEventListener('scroll', toggleBackToTop, { passive: true });
-
-        backToTopBtn.addEventListener('click', function() {
+    // Back to top click
+    if (backToTop) {
+        backToTop.addEventListener('click', (e) => {
+            e.preventDefault();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+
+    // 4. Intersection Observer for custom reveal animations
+    const observerCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible', 'is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    };
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(observerCallback, { threshold: 0.1 });
+        
+        document.querySelectorAll('.fade-in-up, .reveal-segment').forEach(el => {
+            observer.observe(el);
+        });
+    } else {
+        // Fallback for older browsers
+        document.querySelectorAll('.fade-in-up, .reveal-segment').forEach(el => {
+            el.classList.add('visible', 'is-visible');
+        });
+    }
+
+    // 5. Tab Navigation Handler (e.g. Profil Sekolah)
+    const tabLinks = document.querySelectorAll('.list-group-item-action[data-bs-toggle="list"]');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof bootstrap !== 'undefined') {
+                const tab = new bootstrap.Tab(this);
+                tab.show();
+            }
+        });
+    });
 });

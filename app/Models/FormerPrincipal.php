@@ -30,6 +30,7 @@ SVG;
             return 'data:image/svg+xml;charset=UTF-8,' . rawurlencode($svg);
         }
 
-        return asset('storage/' . $this->photo_path);
+        $cleanPath = ltrim(preg_replace('/^(storage\/|media\/)+/', '', $this->photo_path), '/');
+        return url('media/' . $cleanPath);
     }
 }

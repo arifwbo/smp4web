@@ -4,12 +4,12 @@
 <section class="bg-light py-5 border-bottom">
     <div class="container">
         <div class="row align-items-center g-4">
-            <div class="col-lg-7">
+            <div class="col-lg-7 reveal-segment" data-reveal="left">
                 <p class="text-uppercase small text-primary fw-bold mb-2">Informasi Sekolah</p>
                 <h1 class="fw-bold mb-3">Berita, Pengumuman, Agenda, dan Informasi Terbaru</h1>
                 <p class="text-muted mb-0">Pantau kabar terbaru seputar SMP Negeri 4 Samarinda. Semua informasi penting kami rangkum pada satu halaman agar orang tua, siswa, dan masyarakat dapat mengakses perkembangan sekolah secara cepat.</p>
             </div>
-            <div class="col-lg-5">
+            <div class="col-lg-5 reveal-segment" data-reveal="right">
                 <div class="bg-white rounded-4 shadow-sm p-4 border">
                     <h5 class="fw-semibold mb-3">Info Singkat</h5>
                     <ul class="list-unstyled mb-0 small text-muted">
@@ -44,7 +44,7 @@
 
         <div class="row g-4 mb-4">
             @foreach($statCards as $key => $meta)
-                <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-3 reveal-segment">
                     <div class="border rounded-4 p-3 h-100 shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="badge bg-light text-dark">{{ $meta['label'] }}</span>
@@ -57,7 +57,7 @@
             @endforeach
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-4">
+        <div class="d-flex flex-wrap gap-2 mb-4 reveal-segment">
             @foreach($filterOptions as $value => $label)
                 @php
                     $isActive = $activeCategory === $value;
@@ -71,10 +71,10 @@
 
         <div class="row g-4">
             @forelse($posts as $post)
-                <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal-segment">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="ratio ratio-16x9">
-                            <img src="{{ $post->gambar_url }}" class="card-img-top rounded-top" alt="{{ $post->judul }}" style="object-fit: cover;">
+                            <img src="{{ $post->gambar_url }}" class="card-img-top rounded-top" alt="{{ $post->judul }}" style="object-fit: cover;" onerror="this.onerror=null; this.src='{{ asset('img/placeholder.jpg') }}';">
                         </div>
                         <div class="card-body d-flex flex-column">
                             <span class="badge bg-light text-dark text-uppercase small mb-2">{{ ucfirst($post->kategori) }}</span>
@@ -112,7 +112,7 @@
 
 <section class="pb-5">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 reveal-segment">
             <div>
                 <p class="text-uppercase small text-primary fw-bold mb-1">Sorotan Kategori</p>
                 <h3 class="fw-bold mb-0">Ringkasan Cepat per Kategori</h3>
@@ -121,7 +121,7 @@
         </div>
         <div class="row g-4">
             @foreach($groupedPosts as $category => $items)
-                <div class="col-md-6 col-lg-3">
+            <div class="col-md-6 col-lg-3 reveal-segment">
                     <div class="border rounded-4 h-100 p-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="badge bg-primary-subtle text-primary text-uppercase small">{{ ucfirst($category) }}</span>

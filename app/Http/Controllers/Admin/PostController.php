@@ -69,6 +69,10 @@ class PostController extends Controller
             $data['gambar'] = $this->media->storeImage($request->file('gambar'), 'posts');
         }
 
+        if ($request->hasFile('lampiran')) {
+            $data['lampiran_path'] = $this->media->storeFile($request->file('lampiran'), 'attachments');
+        }
+
         $post = Post::create($data);
 
         ActivityLogger::log('post.created', 'Menambahkan berita: ' . $post->judul);
@@ -88,6 +92,11 @@ class PostController extends Controller
         if ($request->hasFile('gambar')) {
             $this->media->delete($post->gambar);
             $data['gambar'] = $this->media->storeImage($request->file('gambar'), 'posts');
+        }
+
+        if ($request->hasFile('lampiran')) {
+            $this->media->delete($post->lampiran_path);
+            $data['lampiran_path'] = $this->media->storeFile($request->file('lampiran'), 'attachments');
         }
 
         $post->update($data);
@@ -135,6 +144,7 @@ class PostController extends Controller
             'isi' => ['required', 'string'],
             'kategori' => ['required', 'in:berita,pengumuman,agenda,prestasi'],
             'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'lampiran' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,zip', 'max:5120'],
         ]);
     }
 }

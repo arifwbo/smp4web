@@ -28,6 +28,15 @@
                     @endif
                 </div>
                 <div class="mb-3">
+                    <label>Lampiran (PDF/Dokumen)</label>
+                    <input type="file" name="lampiran" class="form-control">
+                    @if($post->lampiran_path)
+                        <div class="small mt-1">
+                            Lampiran saat ini: <a href="{{ asset('storage/'.$post->lampiran_path) }}" target="_blank" class="text-decoration-none">Unduh</a>
+                        </div>
+                    @endif
+                </div>
+                <div class="mb-3">
                     <label>Isi</label>
                     <textarea name="isi" class="form-control wysiwyg-editor" rows="5" required>{{ old('isi', $post->isi) }}</textarea>
                 </div>

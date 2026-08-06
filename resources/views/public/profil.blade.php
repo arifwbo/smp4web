@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="profile-hero text-white py-5 mb-5">
-    <div class="container">
-        <p class="text-uppercase text-white-50 mb-2">Profil Sekolah</p>
-        <h1 class="fw-bold display-5 mb-1">SMP Negeri 4 Samarinda</h1>
-        <p class="lead mb-0">Mengenal lebih dekat identitas, sejarah, serta arah kebijakan sekolah.</p>
+<div class="profile-hero py-5 mb-5">
+    <div class="container reveal-segment">
+        <p class="text-uppercase mb-2" style="color: rgba(255,255,255,0.75); letter-spacing: 0.12em; font-size: 0.8rem; font-weight: 600;">Profil Sekolah</p>
+        <h1 class="fw-bold display-5 mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; text-shadow: 0 2px 12px rgba(0,0,0,0.25); letter-spacing: -0.02em;">SMP Negeri 4 Samarinda</h1>
+        <p class="lead mb-0" style="color: rgba(255,255,255,0.85); font-size: 1.05rem;">Mengenal lebih dekat identitas, sejarah, serta arah kebijakan sekolah.</p>
     </div>
 </div>
 
@@ -22,7 +22,7 @@
 SVG;
 
     $logoPublic = $profil?->logo_path
-        ? asset('storage/' . $profil->logo_path)
+        ? url('media/' . ltrim(preg_replace('/^(storage\/|media\/)+/', '', $profil->logo_path), '/'))
         : 'data:image/svg+xml;charset=UTF-8,' . rawurlencode($logoCardPlaceholder);
 
     $identityFacts = collect([
@@ -42,6 +42,9 @@ SVG;
         ['icon' => 'fas fa-globe', 'label' => 'Website', 'value' => config('app.url'), 'url' => url('/')],
     ])->filter(fn ($item) => filled($item['value']))->values();
 
+    $guruStructureTable = collect($guruStructureTable ?? []);
+    $tuStructureTable = collect($tuStructureTable ?? []);
+
     $structureField = $profil?->struktur_organisasi;
     $hasStructureText = filled($structureField);
     $structureFieldIsEmbed = $hasStructureText && Str::contains($structureField, ['<img', '<svg', '<iframe']);
@@ -55,6 +58,7 @@ SVG;
 
     $hasStructureImages = filled($guruStructureImage) || filled($tuStructureImage);
     $hasStructureMedia = $hasStructureText || $hasStructureImages;
+    $hasStructureTables = $guruStructureTable->isNotEmpty() || $tuStructureTable->isNotEmpty();
 
     $mapsEmbedHtml = null;
     if (filled($profil?->maps_embed)) {
@@ -66,7 +70,7 @@ SVG;
 @endphp
 
 <div class="container pb-5 profile-page">
-    <div class="profile-card profile-identity-card p-4 p-lg-5 mb-5">
+    <div class="profile-card profile-identity-card p-4 p-lg-5 mb-5 reveal-segment">
         <div class="row align-items-center g-4">
             <div class="col-md-4 text-center">
                 <div class="identity-logo-frame mx-auto">
@@ -117,10 +121,10 @@ SVG;
 </svg>
 SVG;
             $kepsekPhoto = $profil?->foto_kepsek
-                ? asset('storage/' . $profil->foto_kepsek)
+                ? url('media/' . ltrim(preg_replace('/^(storage\/|media\/)+/', '', $profil->foto_kepsek), '/'))
                 : 'data:image/svg+xml;charset=UTF-8,' . rawurlencode($placeholderSvg);
         @endphp
-        <div class="profile-card p-4 p-lg-5 mb-5">
+        <div class="profile-card p-4 p-lg-5 mb-5 reveal-segment">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-4 text-center">
                     <div class="kepsek-photo-frame mx-auto mb-3">
@@ -141,7 +145,7 @@ SVG;
     @endif
 
     @if($formerPrincipals->isNotEmpty())
-        <div class="profile-card p-4 p-lg-5 mb-5" id="riwayat-kepsek">
+        <div class="profile-card p-4 p-lg-5 mb-5 reveal-segment" id="riwayat-kepsek">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <div>
                     <p class="profile-section-title mb-1">Jejak Kepemimpinan</p>
@@ -151,7 +155,7 @@ SVG;
             </div>
             <div class="row g-4">
                 @foreach($formerPrincipals as $former)
-                    <div class="col-md-6">
+                    <div class="col-md-6 reveal-segment">
                         <div class="former-card h-100">
                             <div class="former-avatar">
                                 <img src="{{ $former->photo_url }}" alt="{{ $former->name }}">
@@ -169,7 +173,7 @@ SVG;
     @endif
 
     <div class="row g-4">
-        <div class="col-lg-3">
+        <div class="col-lg-3 reveal-segment" data-reveal="left">
             <div class="profile-card profile-tabs">
                 <p class="profile-section-title">Navigasi</p>
                 <div class="list-group profile-nav" role="tablist">
@@ -192,10 +196,10 @@ SVG;
                 </div>
             </div>
         </div>
-        <div class="col-lg-9">
+        <div class="col-lg-9 reveal-segment" data-reveal="right">
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="identitas" role="tabpanel">
-                    <div class="card profile-content-card mb-4">
+                    <div class="card profile-content-card mb-4 reveal-segment">
                         <div class="card-body">
                             <div class="card-heading">
                                 <h3>Identitas Sekolah</h3>
@@ -231,7 +235,7 @@ SVG;
                     </div>
                 </div>
                 <div class="tab-pane fade" id="sejarah" role="tabpanel">
-                    <div class="card profile-content-card mb-4">
+                    <div class="card profile-content-card mb-4 reveal-segment">
                         <div class="card-body">
                             <div class="card-heading">
                                 <h3>Sejarah</h3>
@@ -244,7 +248,7 @@ SVG;
                     </div>
                 </div>
                 <div class="tab-pane fade" id="visi" role="tabpanel">
-                    <div class="card profile-content-card mb-4">
+                    <div class="card profile-content-card mb-4 reveal-segment">
                         <div class="card-body">
                             <div class="card-heading">
                                 <h3>Visi, Misi & Tujuan</h3>
@@ -272,7 +276,7 @@ SVG;
                     </div>
                 </div>
                 <div class="tab-pane fade" id="struktur" role="tabpanel">
-                    <div class="card profile-content-card mb-4">
+                    <div class="card profile-content-card mb-4 reveal-segment">
                         <div class="card-body">
                             <div class="card-heading">
                                 <h3>Struktur Organisasi</h3>
@@ -342,6 +346,88 @@ SVG;
                             @else
                                 <p class="text-muted text-center py-5">Gambar atau deskripsi struktur belum diunggah.</p>
                             @endif
+
+                        @if($hasStructureTables)
+                            <div class="row g-4 mt-3">
+                                @if($guruStructureTable->isNotEmpty())
+                                    <div class="col-12">
+                                        <div class="structure-table-card">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                                                <div>
+                                                    <p class="text-uppercase text-muted small mb-1">Susunan Guru</p>
+                                                    <h5 class="mb-0">Struktur Organisasi Guru</h5>
+                                                </div>
+                                                <div class="structure-table-actions">
+                                                    <span class="badge bg-light text-dark border">{{ $guruStructureTable->count() }} entri</span>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" data-export-pdf="#guru-structure-table" data-filename="struktur-guru-smpn4.pdf">
+                                                        <i class="fas fa-file-pdf me-1"></i>Download PDF
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive" id="guru-structure-table">
+                                                <table class="table table-striped align-middle mb-0 structure-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:60px;">No</th>
+                                                            <th>Posisi</th>
+                                                            <th>Penanggung Jawab</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($guruStructureTable as $index => $row)
+                                                            <tr>
+                                                                <td>{{ $index + 1 }}</td>
+                                                                <td>{{ $row['label'] }}</td>
+                                                                <td class="fw-semibold">{{ $row['value'] }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($tuStructureTable->isNotEmpty())
+                                    <div class="col-12">
+                                        <div class="structure-table-card">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                                                <div>
+                                                    <p class="text-uppercase text-muted small mb-1">Staf Tata Usaha</p>
+                                                    <h5 class="mb-0">Struktur Organisasi TU</h5>
+                                                </div>
+                                                <div class="structure-table-actions">
+                                                    <span class="badge bg-light text-dark border">{{ $tuStructureTable->count() }} entri</span>
+                                                    <button type="button" class="btn btn-outline-success btn-sm" data-export-pdf="#tu-structure-table" data-filename="struktur-tu-smpn4.pdf">
+                                                        <i class="fas fa-file-pdf me-1"></i>Download PDF
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive" id="tu-structure-table">
+                                                <table class="table table-striped align-middle mb-0 structure-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:60px;">No</th>
+                                                            <th>Posisi</th>
+                                                            <th>Penanggung Jawab</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($tuStructureTable as $index => $row)
+                                                            <tr>
+                                                                <td>{{ $index + 1 }}</td>
+                                                                <td>{{ $row['label'] }}</td>
+                                                                <td class="fw-semibold">{{ $row['value'] }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                         </div>
                     </div>
                 </div>
@@ -350,7 +436,7 @@ SVG;
     </div>
 
     @if(filled($mapsEmbedHtml))
-        <div class="profile-card p-4 p-lg-5 mt-4">
+        <div class="profile-card p-4 p-lg-5 mt-4 reveal-segment">
             <p class="profile-section-title mb-1">Lokasi Sekolah</p>
             <h3 class="fw-bold text-primary-custom mb-3">Peta SMP Negeri 4 Samarinda</h3>
             <div class="maps-embed-wrapper">
@@ -358,7 +444,7 @@ SVG;
             </div>
         </div>
     @else
-        <div class="profile-card p-4 p-lg-5 mt-4 text-center text-muted">
+        <div class="profile-card p-4 p-lg-5 mt-4 text-center text-muted reveal-segment">
             <p class="mb-0">Embed peta belum tersedia. Silakan perbarui tautan Google Maps melalui panel admin.</p>
         </div>
     @endif
@@ -366,6 +452,7 @@ SVG;
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var tabTriggers = [].slice.call(document.querySelectorAll('.profile-nav .list-group-item'));
@@ -374,6 +461,34 @@ document.addEventListener('DOMContentLoaded', function () {
         triggerEl.addEventListener('click', function (event) {
             event.preventDefault();
             tabTrigger.show();
+        });
+    });
+
+    var pdfButtons = document.querySelectorAll('[data-export-pdf]');
+    pdfButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            var selector = button.getAttribute('data-export-pdf');
+            var target = document.querySelector(selector);
+
+            if (!target) {
+                return;
+            }
+
+            if (typeof html2pdf === 'undefined') {
+                alert('Fitur unduh PDF belum siap. Mohon muat ulang halaman.');
+                return;
+            }
+
+            var filename = button.getAttribute('data-filename') || 'struktur-organisasi.pdf';
+            html2pdf()
+                .set({
+                    margin: 0.5,
+                    filename: filename,
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' },
+                })
+                .from(target)
+                .save();
         });
     });
 });
@@ -679,6 +794,32 @@ document.addEventListener('DOMContentLoaded', function () {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
+    }
+
+    .structure-table-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        padding: 1.5rem;
+    }
+
+    .structure-table-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .structure-table thead th {
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .structure-table tbody td {
+        border-bottom: 1px solid rgba(226, 232, 240, 0.7);
     }
 
     .maps-embed-wrapper iframe {

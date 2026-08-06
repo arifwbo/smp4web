@@ -28,12 +28,16 @@
                 </div>
                 <div class="form-group">
                     <label>Role</label>
-                    <select name="role" class="form-control @error('role') is-invalid @enderror" required>
+                    <select name="role_id" class="form-control @error('role_id') is-invalid @enderror" required>
                         <option value="">-- Pilih Role --</option>
-                        <option value="{{ \App\Models\User::ROLE_ADMIN }}" {{ old('role') === \App\Models\User::ROLE_ADMIN ? 'selected' : '' }}>Admin</option>
-                        <option value="{{ \App\Models\User::ROLE_USER }}" {{ old('role', \App\Models\User::ROLE_USER) === \App\Models\User::ROLE_USER ? 'selected' : '' }}>User</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->id }}" {{ (int) old('role_id') === $role->id ? 'selected' : '' }}>
+                                {{ $role->name }}
+                            </option>
+                        @endforeach
                     </select>
-                    @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <small class="text-muted">Role menentukan menu dan izin akses.</small>
+                    @error('role_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="form-group">
                     <label>Password Awal</label>

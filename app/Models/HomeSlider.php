@@ -14,6 +14,11 @@ class HomeSlider extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : asset('img/logo-smp4.jpg');
+        if ($this->image_path) {
+            $cleanPath = ltrim(preg_replace('/^(storage\/|media\/)+/', '', $this->image_path), '/');
+            return url('media/' . $cleanPath);
+        }
+
+        return asset('img/placeholder.jpg');
     }
 }

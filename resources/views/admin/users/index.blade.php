@@ -65,9 +65,20 @@
                                 <td class="font-weight-semibold">{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>
-                                    <span class="badge {{ $user->isAdmin() ? 'badge-danger' : 'badge-info' }}">
-                                        {{ $user->isAdmin() ? 'Admin' : 'User' }}
-                                    </span>
+                                    @php
+                                        $roleSlug = $user->role_slug;
+                                        $roleName = $user->role->name ?? \Illuminate\Support\Str::title(str_replace('-', ' ', $roleSlug ?? 'Tanpa Peran'));
+                                        $badgeClass = match ($roleSlug) {
+                                            \App\Models\Role::SUPER_ADMIN => 'badge-danger',
+                                            \App\Models\Role::ADMIN_CONTENT => 'badge-warning',
+                                            \App\Models\Role::ADMIN_AKADEMIK => 'badge-primary',
+                                            \App\Models\Role::ADMIN_SARPRAS => 'badge-success',
+                                            \App\Models\Role::ADMIN_PPDB => 'badge-info',
+                                            \App\Models\Role::VIEWER => 'badge-secondary',
+                                            default => 'badge-light text-dark',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $roleName }}</span>
                                 </td>
                                 <td>
                                     <span class="badge {{ $user->is_active ? 'badge-success' : 'badge-secondary' }}">

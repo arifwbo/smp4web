@@ -41,11 +41,14 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label>Role</label>
-                                <select name="role" class="form-control @error('role') is-invalid @enderror" required>
-                                    <option value="{{ \App\Models\User::ROLE_ADMIN }}" {{ old('role', $user->role) === \App\Models\User::ROLE_ADMIN ? 'selected' : '' }}>Admin</option>
-                                    <option value="{{ \App\Models\User::ROLE_USER }}" {{ old('role', $user->role) === \App\Models\User::ROLE_USER ? 'selected' : '' }}>User</option>
+                                <select name="role_id" class="form-control @error('role_id') is-invalid @enderror" required>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}" {{ (int) old('role_id', $user->role_id) === $role->id ? 'selected' : '' }}>
+                                            {{ $role->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
-                                @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                @error('role_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="form-group col-md-6">
                                 <label>Status Akun</label>

@@ -1,18 +1,18 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Models\SchoolProfile;
-use App\Models\Post;
-use App\Models\Teacher;
+use App\Models\AcademicSetting;
+use App\Models\ApplicationLink;
 use App\Models\Facility;
+use App\Models\FormerPrincipal;
 use App\Models\Gallery;
 use App\Models\GalleryVideo;
-use App\Models\Message;
-use App\Models\Curriculum;
-use App\Models\AcademicSetting;
 use App\Models\HomeSlider;
+use App\Models\Message;
+use App\Models\Post;
+use App\Models\SchoolProfile;
+use App\Models\Teacher;
 use App\Models\User;
-use App\Models\FormerPrincipal;
 use App\Notifications\ContactMessageNotification;
 
 class PublicController extends Controller {
@@ -69,25 +69,166 @@ class PublicController extends Controller {
 
         $slides = $cachedSlides->isNotEmpty() ? $cachedSlides : $fallbackSlides;
         $latestVideos = GalleryVideo::latest()->take(3)->get();
-        $latestPhotos = Gallery::latest()->take(6)->get();
+        $latestPhotos = Gallery::inRandomOrder()->take(16)->get();
 
-        return view('public.home', compact('profil', 'berita', 'pengumuman', 'latestPengumuman', 'agenda', 'slides', 'featuredTeachers', 'latestVideos', 'latestPhotos'));
+        $totalTeachersCount = Teacher::count();
+        $totalFacilitiesCount = Facility::count();
+        $totalPrestasiCount = Post::where('kategori', 'prestasi')->count();
+        
+        $stats = [
+            'students' => $profil?->jumlah_siswa ?? 850,
+            'teachers' => $totalTeachersCount > 0 ? $totalTeachersCount : 45,
+            'prestasi' => $totalPrestasiCount > 0 ? $totalPrestasiCount : 120,
+            'facilities' => $totalFacilitiesCount > 0 ? $totalFacilitiesCount : 24,
+        ];
+
+        return view('public.home', compact('profil', 'berita', 'pengumuman', 'latestPengumuman', 'agenda', 'slides', 'featuredTeachers', 'latestVideos', 'latestPhotos', 'stats'));
     }
     public function profil() {
         $formerPrincipals = FormerPrincipal::orderBy('sort_order')->orderByDesc('id')->get();
+        $profil = $this->getCommonData();
+
+        $guruStructureFields = [
+            'pimpinan_manajemen' => 'Pimpinan & Manajemen',
+            'komite_sekolah' => 'Komite Sekolah',
+            'kepala_sekolah' => 'Kepala Sekolah',
+            'waka_kerjasama' => 'Waka Bidang Manajemen Kerjasama & Kehumasan',
+            'waka_kurikulum' => 'Waka Bidang Kurikulum',
+            'waka_sarpras' => 'Waka Bidang Sarana Prasarana',
+            'waka_kesiswaan' => 'Waka Bidang Kesiswaan',
+        ];
+
+        $tuStructureFields = [
+            'staf_tata_usaha' => 'Staf Tata Usaha',
+            'koordinator_media_bosda' => 'Koordinator Ruang Media & Bendahara BOSDA',
+            'bendahara_barang' => 'Bendahara Barang',
+            'bendahara_bosp' => 'Bendahara BOSP',
+            'kepegawaian' => 'Kepegawaian',
+            'pengantar_surat_kesiswaan' => 'Pengantar Surat / Kesiswaan',
+            'sapras_surat_menyurat' => 'Sapras / Surat Menyurat',
+            'operator_dapodik_kesiswaan' => 'Operator Dapodik / Kesiswaan',
+            'staf_kepsek_kurikulum' => 'Staf Kepala Sekolah dan Kurikulum',
+            'perpustakaan' => 'Perpustakaan',
+            'lab_komputer_teknisi' => 'Lab. Komputer dan Teknisi',
+            'laboratorium_ipa' => 'Laboratorium IPA',
+            'petugas_kebersihan' => 'Petugas Kebersihan',
+            'petugas_taman_kebersihan' => 'Petugas Taman & Kebersihan',
+            'petugas_keamanan' => 'Petugas Keamanan Sekolah',
+            'penjaga_malam' => 'Penjaga Malam',
+        ];
+
+        $guruStructureTable = collect($guruStructureFields)
+            ->map(function (string $label, string $key) use ($profil) {
+                $value = data_get($profil?->struktur_guru ?? [], $key);
+
+                if (! filled($value)) {
+                    return null;
+                }
+
+                return [
+                    'label' => $label,
+                    'value' => $value,
+                ];
+            })
+            ->filter()
+            ->values();
+
+        $tuStructureTable = collect($tuStructureFields)
+            ->map(function (string $label, string $key) use ($profil) {
+                $value = data_get($profil?->struktur_tu ?? [], $key);
+
+                if (! filled($value)) {
+                    return null;
+                }
+
+                return [
+                    'label' => $label,
+                    'value' => $value,
+                ];
+            })
+            ->filter()
+            ->values();
 
         return view('public.profil', [
-            'profil' => $this->getCommonData(),
+            'profil' => $profil,
             'formerPrincipals' => $formerPrincipals,
+            'guruStructureTable' => $guruStructureTable,
+            'tuStructureTable' => $tuStructureTable,
         ]);
     }
     public function guru() {
         $teachers = Teacher::orderBy('jenis')->orderBy('nama')->get();
         return view('public.guru', ['profil' => $this->getCommonData(), 'teachers' => $teachers]);
     }
-    public function sarpras() {
-        $facilities = Facility::all();
-        return view('public.sarpras', ['profil' => $this->getCommonData(), 'facilities' => $facilities]);
+    public function sarpras(Request $request) {
+        $profil = $this->getCommonData();
+        $categoryMeta = Facility::categoryMeta();
+        $conditionMeta = Facility::conditionMeta();
+
+        $activeCategory = strtolower($request->query('kategori', 'semua'));
+        if ($activeCategory !== 'semua' && ! array_key_exists($activeCategory, $categoryMeta)) {
+            $activeCategory = 'semua';
+        }
+
+        $allFacilities = Facility::published()
+            ->orderBy('kategori')
+            ->orderBy('nama')
+            ->get();
+
+        $filteredFacilities = $activeCategory === 'semua'
+            ? $allFacilities
+            : $allFacilities->where('kategori', $activeCategory);
+
+        $categoryCounts = [];
+        foreach ($categoryMeta as $key => $meta) {
+            $categoryCounts[$key] = $allFacilities->where('kategori', $key)->count();
+        }
+        $categoryCounts['semua'] = $allFacilities->count();
+
+        $conditionStats = [
+            'baik' => $allFacilities->where('kondisi', 'baik')->count(),
+            'cukup' => $allFacilities->where('kondisi', 'cukup')->count(),
+            'perlu_perbaikan' => $allFacilities->where('kondisi', 'perlu_perbaikan')->count(),
+        ];
+
+        $galleryFacilities = $allFacilities->filter(fn (Facility $facility) => filled($facility->foto_path))->take(8);
+        $recentSnapshots = Facility::published()->latest()->take(4)->get();
+
+        return view('public.sarpras', [
+            'profil' => $profil,
+            'facilities' => $filteredFacilities,
+            'categoryMeta' => $categoryMeta,
+            'conditionMeta' => $conditionMeta,
+            'categoryCounts' => $categoryCounts,
+            'conditionStats' => $conditionStats,
+            'activeCategory' => $activeCategory,
+            'galleryFacilities' => $galleryFacilities,
+            'recentSnapshots' => $recentSnapshots,
+        ]);
+    }
+
+    public function aplikasi()
+    {
+        $profil = $this->getCommonData();
+        $applications = ApplicationLink::active()
+            ->orderBy('sort_order')
+            ->orderBy('title')
+            ->get();
+
+        $metrics = [
+            'total' => $applications->count(),
+            'withMedia' => $applications->whereNotNull('image_path')->count(),
+            'recentlyUpdated' => optional($applications->sortByDesc('updated_at')->first())->updated_at,
+        ];
+
+        $featured = $applications->first();
+
+        return view('public.aplikasi', [
+            'profil' => $profil,
+            'applications' => $applications,
+            'metrics' => $metrics,
+            'featured' => $featured,
+        ]);
     }
     public function akademik() {
         $setting = cache()->remember('academic_page', 60, fn () => AcademicSetting::first());

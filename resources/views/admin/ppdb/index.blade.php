@@ -12,7 +12,8 @@
                 <tr>
                     <th>Judul</th>
                     <th>Status</th>
-                    <th>Link Daftar</th>
+                    <th>Link Pendaftaran</th>
+                    <th>Lampiran</th>
                     <th class="text-end">Aksi</th>
                 </tr>
             </thead>
@@ -22,11 +23,24 @@
                     <td>{{ $ppdb->judul }}</td>
                     <td><span class="badge {{ $ppdb->status === 'buka' ? 'bg-success' : 'bg-secondary' }}">{{ strtoupper($ppdb->status) }}</span></td>
                     <td>
-                        @if($ppdb->link_daftar)
-                            <a href="{{ $ppdb->link_daftar }}" target="_blank">{{ parse_url($ppdb->link_daftar, PHP_URL_HOST) }}</a>
-                        @else
-                            -
-                        @endif
+                        @forelse($ppdb->link_collection as $link)
+                            <div>
+                                <a href="{{ $link['url'] }}" target="_blank" rel="noopener">
+                                    {{ $link['label'] ?? parse_url($link['url'], PHP_URL_HOST) }}
+                                </a>
+                            </div>
+                        @empty
+                            <span class="text-muted">-</span>
+                        @endforelse
+                    </td>
+                    <td>
+                        @forelse($ppdb->lampiran_collection as $file)
+                            <div>
+                                <a href="{{ $file['url'] }}" target="_blank" rel="noopener">{{ $file['label'] ?? 'Lampiran' }}</a>
+                            </div>
+                        @empty
+                            <span class="text-muted">-</span>
+                        @endforelse
                     </td>
                     <td class="text-end">
                         <a href="{{ route('admin.ppdb.edit', $ppdb) }}" class="btn btn-sm btn-outline-primary">Edit</a>
@@ -39,7 +53,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="text-center text-muted">Belum ada data.</td>
+                    <td colspan="5" class="text-center text-muted">Belum ada data.</td>
                 </tr>
                 @endforelse
             </tbody>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserPasswordResetRequest;
 use App\Http\Requests\Admin\UserStoreRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,7 @@ class UserManagementController extends Controller
         $search = $request->string('q')->toString();
 
         $users = User::query()
+            ->with('role')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -37,17 +39,21 @@ class UserManagementController extends Controller
 
     public function create(): View
     {
-        return view('admin.users.create');
+        $roles = Role::orderBy('name')->get();
+
+        return view('admin.users.create', compact('roles'));
     }
 
     public function store(UserStoreRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $data['is_active'] = true;
+        $role = Role::findOrFail($data['role_id']);
+        $data['role'] = $role->slug;
 
         $user = User::create($data);
 
-        ActivityLogger::log('users.create', "Menambahkan akun {$user->email}");
+        ActivityLogger::logModelChange('users.create', "Menambahkan akun {$user->email}", $user);
 
         return redirect()
             ->route('admin.users.index')
@@ -56,13 +62,17 @@ class UserManagementController extends Controller
 
     public function edit(User $user): View
     {
-        return view('admin.users.edit', compact('user'));
+        $roles = Role::orderBy('name')->get();
+
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(UserUpdateRequest $request, User $user): RedirectResponse
     {
         $data = $request->validated();
         $data['is_active'] = (bool) $data['is_active'];
+        $role = Role::findOrFail($data['role_id']);
+        $data['role'] = $role->slug;
 
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo) {
@@ -72,9 +82,10 @@ class UserManagementController extends Controller
             $data['profile_photo'] = $request->file('profile_photo')->store('profile', 'public');
         }
 
+        $before = $user->replicate();
         $user->update($data);
 
-        ActivityLogger::log('users.update', "Memperbarui akun {$user->email}");
+        ActivityLogger::log('users.update', "Memperbarui akun {$user->email}", null, $before->toArray(), $user->fresh()->toArray());
 
         return redirect()
             ->route('admin.users.index')
@@ -94,9 +105,10 @@ class UserManagementController extends Controller
             $newPassword = Str::random(12);
         }
 
+        $before = ['updated_at' => $user->updated_at];
         $user->update(['password' => $newPassword]);
 
-        ActivityLogger::log('users.reset_password', "Reset password akun {$user->email}");
+        ActivityLogger::log('users.reset_password', "Reset password akun {$user->email}", null, $before, ['updated_at' => $user->fresh()->updated_at]);
 
         return back()->with([
             'success' => 'Password baru berhasil disetel.',
@@ -110,10 +122,11 @@ class UserManagementController extends Controller
             return back()->withErrors(['status' => 'Anda tidak dapat menonaktifkan akun sendiri.']);
         }
 
+        $before = ['is_active' => $user->is_active];
         $user->update(['is_active' => ! $user->is_active]);
 
         $statusLabel = $user->is_active ? 'mengaktifkan' : 'menonaktifkan';
-        ActivityLogger::log('users.toggle_status', ucfirst($statusLabel) . " akun {$user->email}");
+        ActivityLogger::log('users.toggle_status', ucfirst($statusLabel) . " akun {$user->email}", null, $before, ['is_active' => $user->is_active]);
 
         return back()->with('success', 'Status akun berhasil diperbarui.');
     }
@@ -128,10 +141,11 @@ class UserManagementController extends Controller
             Storage::disk('public')->delete($user->profile_photo);
         }
 
+        $payload = $user->toArray();
         $email = $user->email;
         $user->delete();
 
-        ActivityLogger::log('users.delete', "Menghapus akun {$email}");
+        ActivityLogger::log('users.delete', "Menghapus akun {$email}", null, $payload, null);
 
         return redirect()
             ->route('admin.users.index')

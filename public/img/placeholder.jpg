@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="pbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#pbg)"/>
+  <circle cx="400" cy="210" r="80" fill="#2563eb" opacity="0.3"/>
+  <path d="M360 180 L440 180 L440 240 L360 240 Z" fill="none" stroke="#f59e0b" stroke-width="4"/>
+  <circle cx="385" cy="200" r="10" fill="#f59e0b"/>
+  <path d="M370 235 L395 210 L415 225 L430 215 L438 235 Z" fill="#f59e0b"/>
+  <text x="400" y="340" font-family="'Plus Jakarta Sans', sans-serif" font-size="24" font-weight="600" text-anchor="middle" fill="#94a3b8">SMP Negeri 4 Samarinda</text>
+</svg>

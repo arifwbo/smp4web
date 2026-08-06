@@ -5,7 +5,7 @@
     <div class="card shadow-sm border-0 col-md-8 mx-auto">
         <div class="card-header bg-primary-custom text-white">Edit Informasi PPDB</div>
         <div class="card-body">
-            <form action="{{ route('admin.ppdb.update', $ppdb) }}" method="POST">
+            <form action="{{ route('admin.ppdb.update', $ppdb) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 @include('admin.ppdb.partials.form')

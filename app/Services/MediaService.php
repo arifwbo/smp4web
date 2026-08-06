@@ -17,6 +17,14 @@ class MediaService
         return $file->storeAs($folder, $filename, 'public');
     }
 
+    public function storeFile(UploadedFile $file, string $collection): string
+    {
+        $folder = 'media/' . trim($collection, '/') . '/' . now()->format('Y/m');
+        $filename = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
+
+        return $file->storeAs($folder, $filename, 'public');
+    }
+
     public function delete(?string $path): void
     {
         if ($path && Storage::disk('public')->exists($path)) {

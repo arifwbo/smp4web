@@ -1,9 +1,15 @@
 @extends('layouts.app')
 @section('content')
-<div class="container py-5">
-    <h2 class="text-dinas fw-bold mb-4 border-bottom pb-2">Hubungi Kami</h2>
+<div class="profile-hero py-5 mb-4">
+    <div class="container">
+        <p class="text-uppercase mb-2" style="color: rgba(255,255,255,0.75); letter-spacing: 0.12em; font-size: 0.8rem; font-weight: 600;">Kontak</p>
+        <h1 class="fw-bold display-5 mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif; color: #ffffff; text-shadow: 0 2px 12px rgba(0,0,0,0.25); letter-spacing: -0.02em;">Hubungi Kami</h1>
+        <p class="lead mb-0" style="color: rgba(255,255,255,0.85); font-size: 1.05rem;">Kami siap menjawab pertanyaan dan menerima pesan dari Anda.</p>
+    </div>
+</div>
+<div class="container py-4">
     <div class="row">
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6 mb-4 reveal-segment" data-reveal="left">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="fw-bold">Alamat Sekolah</h5>
@@ -16,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 reveal-segment" data-reveal="right">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Kirim Pesan</h5>

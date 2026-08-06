@@ -26,6 +26,12 @@
                     @error('gambar')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Lampiran (PDF/Dokumen)</label>
+                    <input type="file" name="lampiran" class="form-control">
+                    @error('lampiran')<small class="text-danger">{{ $message }}</small>@enderror
+                    <small class="text-muted">Opsional, tampil sebagai tombol unduh di pengumuman.</small>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Isi</label>
                     <textarea name="isi" class="form-control wysiwyg-editor" rows="5">{{ old('isi') }}</textarea>
                     @error('isi')<small class="text-danger">{{ $message }}</small>@enderror
